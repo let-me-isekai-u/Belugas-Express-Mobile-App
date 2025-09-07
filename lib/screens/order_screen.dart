@@ -118,6 +118,7 @@ class OrderScreen extends StatelessWidget {
                   colors: [Colors.white, Colors.blue[50]!],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
+
                 ),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [

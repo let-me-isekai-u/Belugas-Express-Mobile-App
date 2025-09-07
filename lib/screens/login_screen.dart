@@ -31,10 +31,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
     _showSnackBar(context, "Đăng nhập thành công", Colors.green);
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
-    );
+    // Navigator.pushReplacement(
+    //   context,
+    //   MaterialPageRoute(builder: (context) => const HomeScreen()),
+    // );
   }
 
   void _showSnackBar(BuildContext context, String message, Color color) {

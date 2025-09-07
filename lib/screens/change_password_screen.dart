@@ -1,8 +1,12 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
 import 'login_screen.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
-  const ChangePasswordScreen({super.key});
+  final String email; // nhận email từ ForgotPasswordScreen
+
+  const ChangePasswordScreen({super.key, required this.email});
 
   @override
   State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
@@ -14,6 +18,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   bool _obscurePass = true;
   bool _obscureConfirm = true;
+  bool _isLoading = false;
 
   void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -24,6 +29,52 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
+  }
+
+  Future<void> _onConfirm() async {
+    final pass = passwordController.text.trim();
+    final confirm = confirmController.text.trim();
+
+    if (pass.isEmpty || confirm.isEmpty) {
+      _showSnackBar("Vui lòng nhập đầy đủ thông tin", Colors.red);
+      return;
+    }
+    if (pass.length < 6) {
+      _showSnackBar("Mật khẩu phải có ít nhất 6 ký tự", Colors.red);
+      return;
+    }
+    if (pass != confirm) {
+      _showSnackBar("Mật khẩu xác nhận không khớp", Colors.red);
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final response = await ApiService.forgotPassword(
+        email: widget.email,
+        newPassword: pass,
+      );
+
+      if (response.statusCode == 200) {
+        _showSnackBar("Đổi mật khẩu thành công!", Colors.green);
+
+        Future.delayed(const Duration(seconds: 2), () {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+                (route) => false,
+          );
+        });
+      } else {
+        final error = response.body.isNotEmpty ? jsonDecode(response.body) : {};
+        _showSnackBar(error["message"] ?? "Đổi mật khẩu thất bại!", Colors.red);
+      }
+    } catch (e) {
+      _showSnackBar("Lỗi kết nối: $e", Colors.red);
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -63,7 +114,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   controller: confirmController,
                   hint: "Xác nhận mật khẩu",
                   obscureText: _obscureConfirm,
-                  onToggle: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                  onToggle: () =>
+                      setState(() => _obscureConfirm = !_obscureConfirm),
                 ),
                 const SizedBox(height: 25),
 
@@ -71,7 +123,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _onConfirm,
+                    onPressed: _isLoading ? null : _onConfirm,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue[400],
                       padding: const EdgeInsets.symmetric(vertical: 15),
@@ -80,21 +132,21 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       ),
                       elevation: 3,
                     ),
-                    child: const Text(
+                    child: _isLoading
+                        ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                        : const Text(
                       "Xác nhận",
                       style: TextStyle(fontSize: 18, color: Colors.white),
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
-
-                // TextButton(
-                //   onPressed: () => Navigator.pop(context),
-                //   child: const Text(
-                //     "Quay lại",
-                //     style: TextStyle(color: Colors.white, fontSize: 15),
-                //   ),
-                // ),
               ],
             ),
           ),
@@ -119,7 +171,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         hintText: hint,
         prefixIcon: const Icon(Icons.lock_outline, color: Colors.blue),
         suffixIcon: IconButton(
-          icon: Icon(obscureText ? Icons.visibility_off : Icons.visibility,
+          icon: Icon(
+              obscureText ? Icons.visibility_off : Icons.visibility,
               color: Colors.grey),
           onPressed: onToggle,
         ),
@@ -129,34 +182,5 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         ),
       ),
     );
-  }
-
-  void _onConfirm() {
-    final pass = passwordController.text.trim();
-    final confirm = confirmController.text.trim();
-
-    if (pass.isEmpty || confirm.isEmpty) {
-      _showSnackBar("Vui lòng nhập đầy đủ thông tin", Colors.red);
-      return;
-    }
-    if (pass.length < 6) {
-      _showSnackBar("Mật khẩu phải có ít nhất 6 ký tự", Colors.red);
-      return;
-    }
-    if (pass != confirm) {
-      _showSnackBar("Mật khẩu xác nhận không khớp", Colors.red);
-      return;
-    }
-
-    _showSnackBar("Đổi mật khẩu thành công!", Colors.green);
-
-    // Sau khi đổi mật khẩu, quay lại login
-    Future.delayed(const Duration(seconds: 2), () {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-            (route) => false,
-      );
-    });
   }
 }

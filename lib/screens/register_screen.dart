@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -15,9 +16,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _codeController = TextEditingController();
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _isLoading = false;
+  bool _isSendingCode = false;
 
   void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -30,10 +34,57 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  void _register() {
-    if (_formKey.currentState!.validate()) {
-      _showSnackBar("Đăng ký thành công (demo)!", Colors.green);
-      Navigator.pop(context); // quay lại màn hình Login
+  Future<void> _sendCode() async {
+    if (_emailController.text.trim().isEmpty) {
+      _showSnackBar("Vui lòng nhập email trước khi nhận mã", Colors.orange);
+      return;
+    }
+
+    setState(() => _isSendingCode = true);
+
+    try {
+      final response = await ApiService.sendVerificationCode(
+        email: _emailController.text.trim(),
+      );
+
+      if (response.statusCode == 200) {
+        _showSnackBar("Đã gửi mã xác nhận về email!", Colors.blue);
+      } else {
+        final errorMsg = response.body.isNotEmpty ? response.body : "Gửi mã thất bại!";
+        _showSnackBar(errorMsg, Colors.red);
+      }
+    } catch (e) {
+      _showSnackBar("Lỗi kết nối: $e", Colors.red);
+    } finally {
+      setState(() => _isSendingCode = false);
+    }
+  }
+
+  Future<void> _register() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final response = await ApiService.register(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+        fullName: _nameController.text.trim(),
+        phoneNumber: _phoneController.text.trim(),
+        code: _codeController.text.trim(),
+      );
+
+      if (response.statusCode == 200) {
+        _showSnackBar("Đăng ký thành công!", Colors.green);
+        Navigator.pop(context); // quay lại màn login
+      } else {
+        final errorMsg = response.body.isNotEmpty ? response.body : "Đăng ký thất bại!";
+        _showSnackBar(errorMsg, Colors.red);
+      }
+    } catch (e) {
+      _showSnackBar("Lỗi kết nối: $e", Colors.red);
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -155,6 +206,43 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             return null;
                           },
                         ),
+                        const SizedBox(height: 15),
+
+                        // OTP + nút nhận mã
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildTextField(
+                                controller: _codeController,
+                                hint: "Mã xác nhận",
+                                icon: Icons.verified,
+                                keyboardType: TextInputType.number,
+                                validator: (v) => v == null || v.isEmpty ? "Nhập mã xác nhận" : null,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            ElevatedButton(
+                              onPressed: _isSendingCode ? null : _sendCode,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.orange,
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: _isSendingCode
+                                  ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                                  : const Text("Nhận mã"),
+                            )
+                          ],
+                        ),
                         const SizedBox(height: 25),
 
                         // Nút Đăng ký
@@ -169,8 +257,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                               elevation: 3,
                             ),
-                            onPressed: _register,
-                            child: const Text("Đăng ký", style: TextStyle(fontSize: 18)),
+                            onPressed: _isLoading ? null : _register,
+                            child: _isLoading
+                                ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                                : const Text("Đăng ký", style: TextStyle(fontSize: 18)),
                           ),
                         ),
                         const SizedBox(height: 12),
