@@ -90,7 +90,7 @@ class Order {
       case 2:
         return "Chờ lấy hàng";
       case 3:
-        return "Chờ xác nhận lại";
+        return "Đang xác nhận";
       case 4:
         return "Đang giao";
       case 5:
