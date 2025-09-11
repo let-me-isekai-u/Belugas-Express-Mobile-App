@@ -33,7 +33,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   // QR & payment
   bool showQR = false;
   String qrUrl = "";
-  int countdown = 120; // 2 phút
+  int countdown = 120; // 2p
   Timer? countdownTimer;
   Timer? pollTimer;
   bool isWaitingPayment = false;
@@ -42,6 +42,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   String qrDescription = "";
 
   String countryCodeToEmoji(String countryCode) {
+    // Chuyển "JP" → 🇯🇵, "KR" → 🇰🇷 ...
     return countryCode.toUpperCase().codeUnits
         .map((c) => String.fromCharCode(0x1F1E6 - 65 + c))
         .join();
@@ -78,7 +79,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
 
   Future<int?> _resolveUserId() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt('id');
+    return prefs.getInt('id'); // sử dụng key là 'id'
   }
 
   Future<void> _fetchFeeList() async {
@@ -98,6 +99,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
             };
           }).toList();
 
+          // Nếu chưa chọn nước nào thì chọn nước đầu tiên trong feeList
           if (feeList.isNotEmpty) {
             selectedCountry = feeList.first['countryName'];
             pricePerKilogram = feeList.first['pricePerKilogram'] as double;
@@ -144,13 +146,13 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
       return;
     }
 
+    // Tính số tiền phải chuyển khoản
     final amount = weight * pricePerKilogram;
     paymentAmount = amount;
 
+    // Sinh description cho QR: id + timestamp
     final now = DateTime.now();
-    final timestamp = "${now.hour.toString().padLeft(2, '0')}"
-        "${now.minute.toString().padLeft(2, '0')}"
-        "${now.second.toString().padLeft(2, '0')}";
+    final timestamp = "${now.hour}${now.minute}${now.second}";
     final description = "QR ${userId}${timestamp}";
     qrDescription = description;
 
@@ -158,6 +160,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
         "https://img.vietqr.io/image/MB-34567200288888-compact2.png?amount=${amount.toStringAsFixed(0)}&addInfo=${description}&accountName=LY%20NHAT%20ANH";
     qrUrl = qrImageUrl;
 
+    // Hiển thị QR, bắt đầu countdown và check giao dịch
     setState(() {
       showQR = true;
       countdown = 120;
@@ -165,6 +168,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
       paymentStatus = "";
     });
 
+    // Bắt đầu countdown
     countdownTimer?.cancel();
     countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
@@ -182,7 +186,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
       }
     });
 
-    // Đợi 5s rồi bắt đầu check giao dịch mỗi 5s
+    // Chờ 5s rồi bắt đầu check giao dịch mỗi 5s
     Future.delayed(const Duration(seconds: 5), () {
       pollTimer?.cancel();
       pollTimer = Timer.periodic(const Duration(seconds: 5), (poll) async {
@@ -212,7 +216,9 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                 }
               }
             }
-          } catch (_) {}
+          } catch (e) {
+            // ignore parse error
+          }
         }
       });
     });
@@ -243,6 +249,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
           _showSnackBar("Tạo đơn hàng thành công${code != null ? ': $code' : ''}", Colors.green);
 
           if (orderId != null) {
+            // Chuyển sang màn chi tiết đơn hàng vừa tạo
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
                 builder: (_) => OrderDetailScreen(orderId: orderId),
@@ -251,6 +258,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
             return;
           }
 
+          // Nếu không lấy được orderId thì vẫn reset form
           setState(() {
             showQR = false;
             isWaitingPayment = false;
@@ -268,7 +276,9 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
           final msg = (body is Map && body['message'] != null) ? body['message'] : "Tạo đơn không thành công";
           _showSnackBar(msg.toString(), Colors.orange);
         }
-      } else if (res.statusCode == 401) {
+      }
+
+      else if (res.statusCode == 401) {
         _showSnackBar("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.", Colors.red);
       } else {
         _showSnackBar("Lỗi khi tạo đơn: ${res.statusCode}", Colors.red);
@@ -326,14 +336,13 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text("Quét mã QR để chuyển khoản", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.blue)),
             const SizedBox(height: 16),
-            Image.network(qrUrl, height: 280, width: 280, fit: BoxFit.contain),
+            Image.network(qrUrl, height: 160, fit: BoxFit.contain),
             const SizedBox(height: 10),
             Text(
               "Số tiền: ${paymentAmount.toStringAsFixed(0)} VND",

@@ -19,6 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   bool _isLoading = false;
 
+  // ✅ Đưa hàm này ra ngoài, để dùng được ở bất kỳ đâu trong State
   void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -44,27 +45,17 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final response = await ApiService.login(phoneNumber: phone, password: password);
 
-      // 👉 In raw response
-      print("DEBUG RAW LOGIN RESPONSE: ${response.body}");
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
-        // 👉 In parsed response
-        print("DEBUG PARSED LOGIN RESPONSE: $data");
-
-        // Lấy id từ API
-        final int userId = data["id"] ?? 0;
-        print("DEBUG USER ID: $userId");
-
+        
         // Lưu token và thông tin user
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString("accessToken", data["accessToken"]);
         await prefs.setString("refreshToken", data["refreshToken"]);
-        await prefs.setString("fullName", data["fullName"] ?? "");
-        await prefs.setString("email", data["email"] ?? "");
-        await prefs.setInt("role", data["role"] ?? 0);
-        await prefs.setInt("id", userId);
+        await prefs.setString("fullName", data["fullName"]);
+        await prefs.setString("email", data["email"]);
+        await prefs.setInt("role", data["role"]);
 
         _showSnackBar("Đăng nhập thành công", Colors.green);
 

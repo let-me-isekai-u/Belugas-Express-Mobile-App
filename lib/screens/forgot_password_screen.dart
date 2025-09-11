@@ -51,7 +51,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       if (response.statusCode == 200) {
         _showSnackBar("Mã xác nhận đã được gửi về email!", color: Colors.blue);
         _startResendCountdown();
-      } else {
+      } else if (response.statusCode == 400) {
+        _showSnackBar("Mã không hợp lệ hoặc đã hết hạn", color: Colors.red);
+      }
+
+      else {
         final error = response.body.isNotEmpty ? jsonDecode(response.body) : {};
         _showSnackBar(error["message"] ?? "Không thể gửi mã xác nhận!");
       }
@@ -228,7 +232,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 // 👉 Nút quay lại login
                         TextButton(
                           onPressed: () {
-                            Navigator.pop(context); // hoặc push tới LoginScreen nếu muốn chắc chắn
+                            Navigator.pop(context);
                           },
                           child: const Text(
                             "Quay lại đăng nhập",

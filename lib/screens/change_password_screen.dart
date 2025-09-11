@@ -20,6 +20,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   bool _obscureConfirm = true;
   bool _isLoading = false;
 
+  // lưu lỗi để hiện custom
+  String? _passwordError;
+  String? _confirmError;
+
   void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -35,16 +39,26 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     final pass = passwordController.text.trim();
     final confirm = confirmController.text.trim();
 
-    if (pass.isEmpty || confirm.isEmpty) {
-      _showSnackBar("Vui lòng nhập đầy đủ thông tin", Colors.red);
+    setState(() {
+      _passwordError = null;
+      _confirmError = null;
+    });
+
+    if (pass.isEmpty) {
+      setState(() => _passwordError = "Vui lòng nhập mật khẩu mới");
       return;
     }
-    if (pass.length < 6) {
-      _showSnackBar("Mật khẩu phải có ít nhất 6 ký tự", Colors.red);
+    if (pass.length < 8) {
+      setState(() => _passwordError =
+      "Mật khẩu phải ≥ 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt");
+      return;
+    }
+    if (confirm.isEmpty) {
+      setState(() => _confirmError = "Vui lòng nhập lại mật khẩu");
       return;
     }
     if (pass != confirm) {
-      _showSnackBar("Mật khẩu xác nhận không khớp", Colors.red);
+      setState(() => _confirmError = "Mật khẩu xác nhận không khớp");
       return;
     }
 
@@ -66,6 +80,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 (route) => false,
           );
         });
+      } else if (response.statusCode == 400) {
+        _showSnackBar("Tài khoản email này chưa được đăng ký!", Colors.red);
       } else {
         final error = response.body.isNotEmpty ? jsonDecode(response.body) : {};
         _showSnackBar(error["message"] ?? "Đổi mật khẩu thất bại!", Colors.red);
@@ -106,6 +122,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   hint: "Mật khẩu mới",
                   obscureText: _obscurePass,
                   onToggle: () => setState(() => _obscurePass = !_obscurePass),
+                  errorText: _passwordError,
                 ),
                 const SizedBox(height: 20),
 
@@ -116,6 +133,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   obscureText: _obscureConfirm,
                   onToggle: () =>
                       setState(() => _obscureConfirm = !_obscureConfirm),
+                  errorText: _confirmError,
                 ),
                 const SizedBox(height: 25),
 
@@ -143,8 +161,25 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     )
                         : const Text(
                       "Xác nhận",
-                      style: TextStyle(fontSize: 18, color: Colors.white),
+                      style:
+                      TextStyle(fontSize: 18, color: Colors.white),
                     ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: _isLoading
+                      ? null
+                      : () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const LoginScreen()),
+                    );
+                  },
+                  child: const Text(
+                    "Quay về đăng nhập",
+                    style: TextStyle(
+                        color: Colors.black, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -160,27 +195,51 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     required String hint,
     required bool obscureText,
     required VoidCallback onToggle,
+    String? errorText,
   }) {
-    return TextField(
-      controller: controller,
-      obscureText: obscureText,
-      style: const TextStyle(color: Colors.black),
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.grey[50],
-        hintText: hint,
-        prefixIcon: const Icon(Icons.lock_outline, color: Colors.blue),
-        suffixIcon: IconButton(
-          icon: Icon(
-              obscureText ? Icons.visibility_off : Icons.visibility,
-              color: Colors.grey),
-          onPressed: onToggle,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: controller,
+          obscureText: obscureText,
+          style: const TextStyle(color: Colors.black),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.grey[50],
+            hintText: hint,
+            prefixIcon: const Icon(Icons.lock_outline, color: Colors.blue),
+            suffixIcon: IconButton(
+              icon: Icon(
+                obscureText ? Icons.visibility_off : Icons.visibility,
+                color: Colors.grey,
+              ),
+              onPressed: onToggle,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+          ),
         ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-      ),
+        if (errorText != null)
+          Padding(
+            padding: const EdgeInsets.only(left: 8, top: 4),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.error, color: Colors.red, size: 18),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    errorText,
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
     );
   }
 }

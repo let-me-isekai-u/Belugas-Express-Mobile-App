@@ -1,5 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import 'register_screen.dart';
+import 'terms_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -22,6 +25,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscureConfirmPassword = true;
   bool _isLoading = false;
   bool _isSendingCode = false;
+  bool _agreeTerms = false;
+
+  int _countdown = 0;
+  Timer? _timer;
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _startCountdown() {
+    setState(() => _countdown = 60);
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_countdown == 0) {
+        timer.cancel();
+      } else {
+        setState(() => _countdown--);
+      }
+    });
+  }
 
   void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -49,6 +73,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (response.statusCode == 200) {
         _showSnackBar("Đã gửi mã xác nhận về email!", Colors.blue);
+        _startCountdown();
+      } else if (response.statusCode == 500) {
+        _showSnackBar("Internal Server Error: Lỗi khi gửi email, vui lòng thử lại", Colors.red);
       } else {
         final errorMsg = response.body.isNotEmpty ? response.body : "Gửi mã thất bại!";
         _showSnackBar(errorMsg, Colors.red);
@@ -62,6 +89,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
+    if (!_agreeTerms) {
+      _showSnackBar("Bạn cần đồng ý với điều khoản sử dụng", Colors.orange);
+      return;
+    }
 
     setState(() => _isLoading = true);
 
@@ -76,7 +107,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (response.statusCode == 200) {
         _showSnackBar("Đăng ký thành công!", Colors.green);
-        Navigator.pop(context); // quay lại màn login
+        Navigator.pop(context);
+      } else if (response.statusCode == 409) {
+        _showSnackBar("Email hoặc số điện thoại đã được đăng ký", Colors.red);
+      } else if (response.statusCode == 400) {
+        _showSnackBar("Dữ liệu truyền vào không hợp lệ (có trường bị trống)", Colors.red);
+      } else if (response.statusCode == 401) {
+        _showSnackBar("Mã xác nhận không hợp lệ hoặc đã hết hạn", Colors.red);
       } else {
         final errorMsg = response.body.isNotEmpty ? response.body : "Đăng ký thất bại!";
         _showSnackBar(errorMsg, Colors.red);
@@ -151,45 +188,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         const SizedBox(height: 15),
 
-                        _buildTextField(
+                        _buildPasswordField(
                           controller: _passwordController,
                           hint: "Mật khẩu",
-                          icon: Icons.lock,
                           obscure: _obscurePassword,
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                              color: Colors.grey,
-                            ),
-                            onPressed: () {
-                              setState(() => _obscurePassword = !_obscurePassword);
-                            },
-                          ),
-                          validator: (v) => v == null || v.isEmpty ? "Vui lòng nhập mật khẩu" : null,
+                          onToggle: () => setState(() => _obscurePassword = !_obscurePassword),
                         ),
                         const SizedBox(height: 15),
 
-                        _buildTextField(
+                        _buildPasswordField(
                           controller: _confirmPasswordController,
                           hint: "Xác nhận mật khẩu",
-                          icon: Icons.lock_outline,
                           obscure: _obscureConfirmPassword,
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
-                              color: Colors.grey,
-                            ),
-                            onPressed: () {
-                              setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
-                            },
-                          ),
+                          onToggle: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return "Vui lòng xác nhận mật khẩu";
-                            }
-                            if (value != _passwordController.text) {
-                              return "Mật khẩu không khớp";
-                            }
+                            if (value == null || value.isEmpty) return "Vui lòng xác nhận mật khẩu";
+                            if (value != _passwordController.text) return "Mật khẩu không khớp";
                             return null;
                           },
                         ),
@@ -222,50 +236,75 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                             const SizedBox(width: 10),
                             ElevatedButton(
-                              onPressed: _isSendingCode ? null : _sendCode,
+                              onPressed: (_isSendingCode || _countdown > 0) ? null : _sendCode,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.orange,
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               ),
                               child: _isSendingCode
                                   ? const SizedBox(
                                 width: 18,
                                 height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                               )
-                                  : const Text("Nhận mã"),
-                            )
+                                  : Text(_countdown > 0 ? "Gửi lại ($_countdown)" : "Nhận mã"),
+                            ),
                           ],
                         ),
-                        const SizedBox(height: 25),
+                        const SizedBox(height: 15),
+
+                        // Checkbox điều khoản
+                        Row(
+                          children: [
+                            Checkbox(
+                              value: _agreeTerms,
+                              onChanged: (val) => setState(() => _agreeTerms = val ?? false),
+                            ),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => const TermsScreen()),
+                                  );
+                                },
+                                child: const Text.rich(
+                                  TextSpan(
+                                    text: "Tôi đồng ý với ",
+                                    children: [
+                                      TextSpan(
+                                        text: "Điều khoản sử dụng",
+                                        style: TextStyle(
+                                          color: Colors.blue,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
 
                         // Nút Đăng ký
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue[400],
+                              backgroundColor: _agreeTerms ? Colors.blue[400] : Colors.grey,
                               padding: const EdgeInsets.symmetric(vertical: 15),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               elevation: 3,
                             ),
-                            onPressed: _isLoading ? null : _register,
+                            onPressed: (_isLoading || !_agreeTerms) ? null : _register,
                             child: _isLoading
                                 ? const SizedBox(
                               width: 20,
                               height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                             )
                                 : const Text("Đăng ký", style: TextStyle(fontSize: 18)),
                           ),
@@ -307,12 +346,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
         hintText: hint,
         prefixIcon: Icon(icon, color: Colors.blue[700]),
         suffixIcon: suffixIcon,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        errorMaxLines: 3,
       ),
       validator: validator,
+    );
+  }
+
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required String hint,
+    required bool obscure,
+    required VoidCallback onToggle,
+    String? Function(String?)? validator,
+  }) {
+    return _buildTextField(
+      controller: controller,
+      hint: hint,
+      icon: Icons.lock,
+      obscure: obscure,
+      suffixIcon: IconButton(
+        icon: Icon(obscure ? Icons.visibility_off : Icons.visibility, color: Colors.grey),
+        onPressed: onToggle,
+      ),
+      validator: validator ??
+              (v) {
+            if (v == null || v.isEmpty) return "Vui lòng nhập mật khẩu";
+            if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$').hasMatch(v)) {
+              return "Mật khẩu ≥8 ký tự, gồm chữ hoa, chữ thường, số & ký tự đặc biệt";
+            }
+            return null;
+          },
     );
   }
 }
