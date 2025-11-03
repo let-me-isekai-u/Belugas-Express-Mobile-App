@@ -1,0 +1,102 @@
+﻿@{
+    ViewData["Title"] = "Tra cứu đơn hàng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5">
+    <h2 class="mb-4 text-primary">📦 Tra cứu đơn hàng</h2>
+    <div class="input-group mb-4">
+        <input type="text" class="form-control" id="orderCodeInput" placeholder="Nhập mã đơn hàng...">
+        <button class="btn btn-primary" onclick="lookupOrder()">Tra cứu</button>
+    </div>
+</div>
+
+<!-- Modal hiển thị kết quả -->
+<div class="modal fade" id="orderModal" tabindex="-1" aria-labelledby="orderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content shadow border-0">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="orderModalLabel">Thông tin đơn hàng</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row gy-3">
+                    <div class="col-md-6">
+                        <p><strong>Mã đơn hàng:</strong> <span id="orderCode"></span></p>
+                        <p><strong>Người gửi:</strong> <span id="senderName"></span> (<span id="senderPhone"></span>)</p>
+                        <p><strong>Địa chỉ gửi:</strong> <span id="senderAddress"></span></p>
+                        <p><strong>Quốc gia:</strong> <span id="country"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Người nhận:</strong> <span id="receiverName"></span> (<span id="receiverPhone"></span>)</p>
+                        <p><strong>Địa chỉ nhận:</strong> <span id="receiverAddress"></span></p>
+                        <p><strong>Trọng lượng ước tính:</strong> <span id="weightEstimate"></span> kg</p>
+                        <p><strong>Trọng lượng thực:</strong> <span id="weightReal"></span> kg</p>
+                    </div>
+                </div>
+                <hr />
+                <p><strong>Ngày tạo:</strong> <span id="createDate"></span></p>
+                <p><strong>Trạng thái:</strong> <span class="badge bg-info" id="status"></span></p>
+                <p><strong>Tạm ứng:</strong> <span id="downPayment"></span> VND</p>
+                <p><strong>Đơn giá:</strong> <span id="pricePerKilogram"></span> VND/kg</p>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/js/client/showtoast.js"></script>
+@section Scripts {
+    <script>
+        function getStatusText(status) {
+            switch (status) {
+                case 1: return "Chờ xác nhận";
+                case 2: return "Chờ lấy hàng";
+                case 3: return "Chờ xử lý";
+                case 4: return "Đang vận chuyển";
+                case 5: return "Hoàn thành";
+                case 6: return "Đã hủy";
+                default: return "Không xác định";
+            }
+        }
+
+        function lookupOrder() {
+            const orderCode = $('#orderCodeInput').val().trim();
+            if (!orderCode) {
+                alert("Vui lòng nhập mã đơn hàng.");
+                return;
+            }
+            console.log(orderCode);
+            $.ajax({
+                url: '/Order/FindOrderCode',
+                type: 'GET',
+                data: { id: orderCode },
+                success: function (res) {
+                    if (res.success) {
+                        const data = res.data;
+
+                        $('#orderCode').text(data.orderCode);
+                        $('#senderName').text(data.senderName);
+                        $('#senderPhone').text(data.senderPhone);
+                        $('#senderAddress').text(data.senderAddress);
+                        $('#receiverName').text(data.receiverName);
+                        $('#receiverPhone').text(data.receiverPhone);
+                        $('#receiverAddress').text(data.receiverAddress);
+                        $('#weightEstimate').text(data.weightEstimate ?? "-");
+                        $('#weightReal').text(data.weightReal ?? "-");
+                        $('#country').text(data.country);
+                        $('#createDate').text(new Date(data.createDate).toLocaleDateString("vi-VN"));
+                        $('#status').text(getStatusText(data.status));
+                        $('#downPayment').text((data.downPayment || 0).toLocaleString('vi-VN'));
+                        $('#pricePerKilogram').text((data.pricePerKilogram || 0).toLocaleString('vi-VN'));
+
+                        $('#orderModal').modal('show');
+                    } else {
+                        showToast(res.message,"error");
+                    }
+                },
+                error: function () {
+                    showToast("Xảy ra lỗi khi kết nối, vui lòng thử lại sau!","error");
+                }
+            });
+        }
+    </script>
+}

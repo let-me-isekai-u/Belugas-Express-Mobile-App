@@ -1,0 +1,109 @@
+﻿<div class="container mt-5">
+    <div class="row g-4">
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <div class="user-avatar mb-3">
+                        <img src="~/assets/images/user.png"
+                             alt="@ViewBag.Account.FullName"
+                             id="main-user-image"
+                             class="rounded-circle img-fluid shadow-sm"
+                             style="width:120px; height:120px; object-fit:cover;" />
+                    </div>
+                    <h5 class="mb-1 fw-bold" id="main-user-name">@ViewBag.Account.FullName</h5>
+                    <p class="text-muted mb-0" id="main-user-email">@ViewBag.Account.Email</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="col-lg-9">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <!-- Tabs -->
+                    <ul class="nav nav-tabs mb-3" id="myTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="about-tab" data-bs-toggle="tab"
+                                    data-bs-target="#about-tab-data" type="button" role="tab">
+                                <i class="bi bi-person-lines-fill me-1"></i> Thông tin cá nhân
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="password-tab" data-bs-toggle="tab"
+                                    data-bs-target="#password-tab-data" type="button" role="tab">
+                                <i class="bi bi-shield-lock me-1"></i> Mật khẩu
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- Tab content -->
+                    <div class="tab-content">
+                        <!-- Personal Info -->
+                        <div class="tab-pane fade show active" id="about-tab-data" role="tabpanel">
+                            <form action="javascript:UpdateLoadData();" method="get">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Họ và tên</label>
+                                        <input type="text" class="form-control"
+                                               id="Account_FullName"
+                                               value="@ViewBag.Account.FullName" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Email</label>
+                                        <input type="email" class="form-control"
+                                               id="Account_Email"
+                                               value="@ViewBag.Account.Email"
+                                               readonly disabled>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Số điện thoại</label>
+                                        <input type="text" class="form-control"
+                                               id="Account_PhoneNumber"
+                                               value="@ViewBag.Account.PhoneNumber" readonly disabled>
+                                    </div>
+                                </div>
+                                <div class="text-end mt-4">
+                                    <button type="submit" id="btn-save-infor" class="btn btn-primary">
+                                        <i class="bi bi-save me-1"></i> Cập nhật
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Change Password -->
+                        <div class="tab-pane fade" id="password-tab-data" role="tabpanel">
+                            <form action="javascript:ChangePassword();" method="get">
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label class="form-label fw-semibold">Mật khẩu cũ</label>
+                                        <input type="password" class="form-control" id="Account_Old_Password" required>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label fw-semibold">Mật khẩu mới</label>
+                                        <input type="password" class="form-control" id="Account_New_Password" required>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label fw-semibold">Xác nhận mật khẩu</label>
+                                        <input type="password" class="form-control" id="Account_Confirm_Password" required>
+                                    </div>
+                                </div>
+                                <div class="text-end mt-4">
+                                    <button type="submit" id="btn-save-password" class="btn btn-warning">
+                                        <i class="bi bi-key-fill me-1"></i> Đổi mật khẩu
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <input class="form-control d-none" type="number" id="Account_ID"
+           value="@ViewBag.Account.Id" hidden readonly disabled />
+</div>
+
+<script src="~/js/client/accountdetails.js"></script>
+<script src="~/js/client/showtoast.js"></script>

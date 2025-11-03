@@ -1,0 +1,222 @@
+[
+  {
+    "ContainingType": "BelgulasShip.Controllers.Api.AccountApiController",
+    "Method": "GenerateReferralCode",
+    "RelativePath": "api/AccountApi",
+    "HttpMethod": "",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.String",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "BelgulasShip.Controllers.Api.AccountApiController",
+    "Method": "ForgotPassword",
+    "RelativePath": "api/AccountApi/forgot-password",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "BelgulasShip.Controllers.Api.AccountApiController\u002BForgotPasswordRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BelgulasShip.Controllers.Api.AccountApiController",
+    "Method": "Login",
+    "RelativePath": "api/AccountApi/login",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "BelgulasShip.DTOs.LoginRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BelgulasShip.Controllers.Api.AccountApiController",
+    "Method": "Refresh",
+    "RelativePath": "api/AccountApi/refresh",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "BelgulasShip.DTOs.RefreshTokenRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BelgulasShip.Controllers.Api.AccountApiController",
+    "Method": "Register",
+    "RelativePath": "api/AccountApi/register",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "BelgulasShip.DTOs.RegisterRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BelgulasShip.Controllers.Api.AccountApiController",
+    "Method": "SendVerificationCode",
+    "RelativePath": "api/AccountApi/send-verification-code",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "email",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BelgulasShip.Controllers.Api.AccountApiController",
+    "Method": "VerifyCode",
+    "RelativePath": "api/AccountApi/verify-code",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "BelgulasShip.Controllers.Api.AccountApiController\u002BVerifyCodeRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BelgulasShip.Controllers.Api.CountryApiController",
+    "Method": "GetCountry",
+    "RelativePath": "api/CountryApi/get-country",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BelgulasShip.Controllers.Api.HomeApiController",
+    "Method": "GetProfile",
+    "RelativePath": "api/HomeApi/profile",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BelgulasShip.Controllers.Api.OrderApiController",
+    "Method": "GetOrderById",
+    "RelativePath": "api/OrderApi/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BelgulasShip.Controllers.Api.OrderApiController",
+    "Method": "CreateOrder",
+    "RelativePath": "api/OrderApi/create",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "BelgulasShip.DTOs.CreateOrderRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BelgulasShip.Controllers.Api.OrderApiController",
+    "Method": "GetMyOrders",
+    "RelativePath": "api/OrderApi/my-orders",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BelgulasShip.Controllers.Api.PaymentApiController",
+    "Method": "HistoryPayment",
+    "RelativePath": "api/PaymentApi/get-history-payment",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BelgulasShip.Controllers.Api.PricingTableApiController",
+    "Method": "GetPrice",
+    "RelativePath": "api/PricingTableApi/get-pricing-table/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BelgulasShip.Controllers.Api.StatusOrderLogApiController",
+    "Method": "ChangStatus",
+    "RelativePath": "api/StatusOrderLogApi/additional-transfer",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "BelgulasShip.Controllers.Api.StatusOrderLogApiController\u002BAdditionalTransfer",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]
