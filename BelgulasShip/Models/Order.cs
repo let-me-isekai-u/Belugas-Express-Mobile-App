@@ -21,6 +21,8 @@ public partial class Order
 
     public string? ReceiverAddress { get; set; }
 
+    public int? WardId { get; set; }
+
     public decimal? DownPayment { get; set; }
 
     public int? CountryId { get; set; }

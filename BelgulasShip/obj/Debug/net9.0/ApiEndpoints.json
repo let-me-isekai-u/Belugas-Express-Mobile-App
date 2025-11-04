@@ -116,6 +116,32 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "BelgulasShip.Controllers.Api.AddressApiController",
+    "Method": "GetProvinces",
+    "RelativePath": "api/AddressApi/provinces",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BelgulasShip.Controllers.Api.AddressApiController",
+    "Method": "GetWardsByProvince",
+    "RelativePath": "api/AddressApi/wards/{province_id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "province_id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "BelgulasShip.Controllers.Api.CountryApiController",
     "Method": "GetCountry",
     "RelativePath": "api/CountryApi/get-country",

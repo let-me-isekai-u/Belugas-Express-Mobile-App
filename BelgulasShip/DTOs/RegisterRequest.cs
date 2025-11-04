@@ -8,5 +8,6 @@
         public string PhoneNumber { get; set; }
         public string ReferredByCode { get; set; }
         public string Code { get; set; }
+        public string PhoneZalo { get; set; }
     }
 }

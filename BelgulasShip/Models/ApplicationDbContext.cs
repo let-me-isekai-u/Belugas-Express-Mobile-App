@@ -31,11 +31,15 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<ProductType> ProductTypes { get; set; }
 
+    public virtual DbSet<Province> Provinces { get; set; }
+
     public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
 
     public virtual DbSet<StatusOrderLog> StatusOrderLogs { get; set; }
 
     public virtual DbSet<VerificationCode> VerificationCodes { get; set; }
+
+    public virtual DbSet<Ward> Wards { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer("Data Source=MSI\\SQLEXPRESS;Initial Catalog=BegulasShipDB;user id=sang;password=123456;TrustServerCertificate=True");
@@ -52,6 +56,7 @@ public partial class ApplicationDbContext : DbContext
             entity.Property(e => e.Address)
                 .HasMaxLength(500)
                 .HasColumnName("address");
+            entity.Property(e => e.CountryId).HasColumnName("country_id");
             entity.Property(e => e.CreateDate)
                 .HasColumnType("datetime")
                 .HasColumnName("create_date");
@@ -66,6 +71,9 @@ public partial class ApplicationDbContext : DbContext
             entity.Property(e => e.PhoneNumber)
                 .HasMaxLength(20)
                 .HasColumnName("phone_number");
+            entity.Property(e => e.PhoneZalo)
+                .HasMaxLength(20)
+                .HasColumnName("phone_zalo");
             entity.Property(e => e.ReferralCode)
                 .HasMaxLength(50)
                 .HasColumnName("referral_code");
@@ -162,6 +170,7 @@ public partial class ApplicationDbContext : DbContext
             entity.Property(e => e.UpdateDate)
                 .HasColumnType("datetime")
                 .HasColumnName("update_date");
+            entity.Property(e => e.WardId).HasColumnName("ward_id");
         });
 
         modelBuilder.Entity<OrderItem>(entity =>
@@ -240,6 +249,28 @@ public partial class ApplicationDbContext : DbContext
                 .HasColumnName("unit");
         });
 
+        modelBuilder.Entity<Province>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__province__3213E83F9F9988E0");
+
+            entity.ToTable("province");
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedNever()
+                .HasColumnName("id");
+            entity.Property(e => e.CodeName)
+                .HasMaxLength(100)
+                .HasColumnName("code_name");
+            entity.Property(e => e.CountryId).HasColumnName("country_id");
+            entity.Property(e => e.DivisionType)
+                .HasMaxLength(100)
+                .HasColumnName("division_type");
+            entity.Property(e => e.Name)
+                .HasMaxLength(255)
+                .HasColumnName("name");
+            entity.Property(e => e.PhoneCode).HasColumnName("phone_code");
+        });
+
         modelBuilder.Entity<RefreshToken>(entity =>
         {
             entity.ToTable("refresh_token");
@@ -286,6 +317,34 @@ public partial class ApplicationDbContext : DbContext
                 .HasColumnType("datetime")
                 .HasColumnName("expire_at");
             entity.Property(e => e.IsUsed).HasColumnName("is_used");
+        });
+
+        modelBuilder.Entity<Ward>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__ward__3213E83F0DF06081");
+
+            entity.ToTable("ward");
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedNever()
+                .HasColumnName("id");
+            entity.Property(e => e.CodeName)
+                .HasMaxLength(100)
+                .HasColumnName("code_name");
+            entity.Property(e => e.DivisionType)
+                .HasMaxLength(100)
+                .HasColumnName("division_type");
+            entity.Property(e => e.Name)
+                .HasMaxLength(255)
+                .HasColumnName("name");
+            entity.Property(e => e.ProvinceId).HasColumnName("province_id");
+            entity.Property(e => e.ShortCodeName)
+                .HasMaxLength(100)
+                .HasColumnName("short_code_name");
+
+            entity.HasOne(d => d.Province).WithMany(p => p.Wards)
+                .HasForeignKey(d => d.ProvinceId)
+                .HasConstraintName("FK__ward__province_i__2B0A656D");
         });
 
         OnModelCreatingPartial(modelBuilder);

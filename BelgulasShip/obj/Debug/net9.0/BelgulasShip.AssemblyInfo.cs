@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BelgulasShip")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a9b29fb09d75bd174e35e2ba06f6ec1b6ebd979c")]
 [assembly: System.Reflection.AssemblyProductAttribute("BelgulasShip")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BelgulasShip")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

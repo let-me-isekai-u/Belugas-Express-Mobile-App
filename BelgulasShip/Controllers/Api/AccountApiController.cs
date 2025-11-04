@@ -161,7 +161,8 @@ namespace BelgulasShip.Controllers.Api
                 UpdateAt = DateTime.Now,
                 IsDelete = false,
                 ReferredByCode = request.ReferredByCode,
-                ReferralCode = GenerateReferralCode()
+                ReferralCode = GenerateReferralCode(),
+                PhoneZalo=request.PhoneZalo
             };
             _accRepo.Create(account);
             return Ok("Đăng ký thành công");

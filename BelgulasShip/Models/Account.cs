@@ -30,4 +30,8 @@ public partial class Account
     public string? ReferralCode { get; set; }
 
     public string? ReferredByCode { get; set; }
+
+    public int? CountryId { get; set; }
+
+    public string? PhoneZalo { get; set; }
 }
