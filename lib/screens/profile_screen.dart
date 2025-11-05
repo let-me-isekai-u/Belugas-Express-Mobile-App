@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'login_screen.dart';
 import 'change_password_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfileScreen extends StatelessWidget {
   final String fullName;
@@ -14,6 +15,14 @@ class ProfileScreen extends StatelessWidget {
     required this.email,
     required this.phoneNumber,
   });
+
+  // 🆕 Hàm mở Zalo
+  Future<void> _openZalo() async {
+    final Uri zaloUrl = Uri.parse('https://zalo.me/0932265471'); // 🔹 thay số Zalo thật nếu cần
+    if (await canLaunchUrl(zaloUrl)) {
+      await launchUrl(zaloUrl, mode: LaunchMode.externalApplication);
+    }
+  }
 
   Widget _buildInfoTile(String title, String value, IconData icon) {
     return Card(
@@ -31,11 +40,11 @@ class ProfileScreen extends StatelessWidget {
 
   Future<void> _logout(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear(); // xóa toàn bộ dữ liệu khi logout
+    await prefs.clear();
 
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      MaterialPageRoute(builder: (_) => LoginScreen()),
           (route) => false,
     );
   }
@@ -48,7 +57,7 @@ class ProfileScreen extends StatelessWidget {
         backgroundColor: Colors.blue[300],
         title: const Text("Trang cá nhân", style: TextStyle(fontFamily: 'Serif')),
       ),
-      body: SingleChildScrollView( // tránh tràn màn hình
+      body: SingleChildScrollView(
         child: Column(
           children: [
             const SizedBox(height: 16),
@@ -63,9 +72,30 @@ class ProfileScreen extends StatelessWidget {
             _buildInfoTile("Họ tên", fullName, Icons.badge),
             _buildInfoTile("Email", email, Icons.email),
             _buildInfoTile("Số điện thoại", phoneNumber, Icons.phone),
-            // _buildInfoTile("Địa chỉ", "Hà Đông, Hà Nội", Icons.home),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
+
+            // 🆕 Nút Zalo nhỏ góc phải trên phần nút chức năng
+            Padding(
+              padding: const EdgeInsets.only(right: 25),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  onTap: _openZalo,
+                  child: CircleAvatar(
+                    radius: 24,
+                    backgroundColor: Colors.white,
+                    child: Image.asset(
+                      'lib/assets/icons/icons8-zalo-100.png',
+                      width: 32,
+                      height: 32,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 8),
 
             // Nút chức năng
             Padding(
@@ -78,12 +108,14 @@ class ProfileScreen extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange[400],
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                       ),
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => ChangePasswordScreen(email: email)),
+                          MaterialPageRoute(
+                              builder: (_) => ChangePasswordScreen(email: email)),
                         );
                       },
                       icon: const Icon(Icons.lock),
@@ -98,7 +130,8 @@ class ProfileScreen extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red[400],
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                       ),
                       onPressed: () => _logout(context),
                       icon: const Icon(Icons.logout),
@@ -108,7 +141,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),

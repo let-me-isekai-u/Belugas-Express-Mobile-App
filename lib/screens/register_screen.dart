@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
-import 'register_screen.dart';
+import '../models/register_model.dart';
 import 'terms_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -20,6 +20,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _confirmPasswordController = TextEditingController();
   final _phoneController = TextEditingController();
   final _codeController = TextEditingController();
+  final _referralController = TextEditingController();
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -97,26 +98,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final response = await ApiService.register(
+      final message = await RegisterModel.register(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
         fullName: _nameController.text.trim(),
         phoneNumber: _phoneController.text.trim(),
         code: _codeController.text.trim(),
+        referredByCode: _referralController.text.trim().isEmpty
+            ? null
+            : _referralController.text.trim(),
       );
 
-      if (response.statusCode == 200) {
-        _showSnackBar("Đăng ký thành công!", Colors.green);
+      if (message == "Đăng ký thành công!") {
+        _showSnackBar(message, Colors.green);
         Navigator.pop(context);
-      } else if (response.statusCode == 409) {
-        _showSnackBar("Email hoặc số điện thoại đã được đăng ký", Colors.red);
-      } else if (response.statusCode == 400) {
-        _showSnackBar("Dữ liệu truyền vào không hợp lệ (có trường bị trống)", Colors.red);
-      } else if (response.statusCode == 401) {
-        _showSnackBar("Mã xác nhận không hợp lệ hoặc đã hết hạn", Colors.red);
       } else {
-        final errorMsg = response.body.isNotEmpty ? response.body : "Đăng ký thất bại!";
-        _showSnackBar(errorMsg, Colors.red);
+        _showSnackBar(message, Colors.red);
       }
     } catch (e) {
       _showSnackBar("Lỗi kết nối: $e", Colors.red);
@@ -251,6 +248,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   : Text(_countdown > 0 ? "Gửi lại ($_countdown)" : "Nhận mã"),
                             ),
                           ],
+                        ),
+                        const SizedBox(height: 15),
+
+                        // Referral Code
+                        _buildTextField(
+                          controller: _referralController,
+                          hint: "Mã giới thiệu",
+                          icon: Icons.card_giftcard,
                         ),
                         const SizedBox(height: 15),
 

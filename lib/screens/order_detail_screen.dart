@@ -33,7 +33,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('accessToken') ?? '';
-
       if (token.isEmpty) {
         setState(() {
           isLoading = false;
@@ -65,6 +64,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           isLoading = false;
           errorMessage = "Phiên đăng nhập hết hạn, vui lòng đăng nhập lại.";
         });
+      } else if (res.statusCode == 404) {
+        setState(() {
+          isLoading = false;
+          errorMessage = "Không tìm thấy đơn hàng";
+        });
       } else {
         setState(() {
           isLoading = false;
@@ -79,41 +83,30 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     }
   }
 
-  // Tính tổng tiền theo trạng thái
-  double _calcTotal(Map<String, dynamic> o) {
-    final status = o["status"];
-    if (status == 1 || status == 2) {
-      return (o["weightEstimate"] ?? 0) * (o["pricePerKilogram"] ?? 0);
-    } else if (status == 3 || status == 4 || status == 5) {
-      return (o["weightReal"] ?? 0) * (o["pricePerKilogram"] ?? 0);
-    }
-    return 0;
-  }
-
-  double _calcDownPayment(Map<String, dynamic> o, double total) {
-    final status = o["status"];
-    final downPayment = (o["downPayment"] ?? 0).toDouble();
-    if (status == 1 || status == 2) {
-      return total;
-    } else {
-      return downPayment;
-    }
-  }
-
+  // ====== Trạng thái (7 trạng thái mới) ======
   String _statusText(int? status) {
     switch (status) {
-      case 1:
-        return "Chờ xác nhận";
-      case 2:
-        return "Chờ lấy hàng";
-      case 3:
-        return "Chờ xác nhận lại";
-      case 4:
-        return "Đang giao";
-      case 5:
-        return "Đã giao";
-      default:
-        return "Không xác định";
+      case 1: return "Đang đến lấy hàng";
+      case 2: return "Đang trên đường gửi hàng";
+      case 3: return "Đã lấy hàng";
+      case 4: return "Chờ lên máy bay";
+      case 5: return "Chờ gửi hàng";
+      case 6: return "Đang gửi hàng";
+      case 7: return "Giao hàng thành công";
+      default: return "Không xác định";
+    }
+  }
+
+  String? _statusNote(int? status) {
+    switch (status) {
+      case 1: return "Đơn hàng đã được xác nhận";
+      case 2: return "Đơn hàng đã được lấy";
+      case 3: return "Đang xử lý đơn hàng tại kho";
+      case 4: return "Xác minh đơn hàng và chi phí";
+      case 5: return "Đơn hàng đang trên đường tới quốc gia xác nhận";
+      case 6: return "Đã tới quốc gia xác nhận và đang tới điểm nhận";
+      case 7: return null;
+      default: return null;
     }
   }
 
@@ -122,9 +115,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       case 1:
       case 2:
       case 3:
-        return Colors.orange;
       case 4:
+        return Colors.orange;
       case 5:
+      case 6:
+      case 7:
         return Colors.green;
       default:
         return Colors.grey;
@@ -136,14 +131,58 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       case 1:
       case 2:
       case 3:
-        return Icons.hourglass_top;
       case 4:
-        return Icons.local_shipping;
+        return Icons.hourglass_top;
       case 5:
+      case 6:
+        return Icons.local_shipping;
+      case 7:
         return Icons.check_circle;
       default:
         return Icons.help_outline;
     }
+  }
+
+  // ====== Tính tiền theo items và top-level ======
+  double _toDouble(dynamic v) => (v is num) ? v.toDouble() : double.tryParse(v?.toString() ?? '') ?? 0.0;
+
+  double _calcTotalFromItems(Map<String, dynamic> o) {
+    final items = (o['items'] as List?) ?? [];
+    double total = 0.0;
+    for (final itRaw in items) {
+      final it = itRaw as Map<String, dynamic>;
+      final amount = it['amount'];
+      if (amount is num) {
+        total += amount.toDouble();
+        continue;
+      }
+      final price = _toDouble(it['price']);
+      final weightReal = _toDouble(it['weightReal']);
+      final weightEstimate = _toDouble(it['weightEstimate']);
+      final weight = weightReal > 0 ? weightReal : weightEstimate;
+      total += price * weight;
+    }
+    return total;
+  }
+
+  double _readDownPayment(Map<String, dynamic> o) => _toDouble(o['downPayment']);
+  double _readWalletUsed(Map<String, dynamic> o) => _toDouble(o['payWithBalance']);
+
+  String _fmtMoney(num v) => v.toStringAsFixed(0) + " đ";
+
+  void _showStatusNote(BuildContext context, int? status) {
+    final note = _statusNote(status);
+    if (note == null) return;
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(_statusText(status)),
+        content: Text(note),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Đóng")),
+        ],
+      ),
+    );
   }
 
   @override
@@ -189,9 +228,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   Widget _buildOrderDetail() {
-    double total = _calcTotal(orderDetail!);
-    double downPayment = _calcDownPayment(orderDetail!, total);
-    int? statusValue = orderDetail!["status"];
+    final o = orderDetail!;
+    final total = _calcTotalFromItems(o);
+    final downPayment = _readDownPayment(o);
+    final walletUsed = _readWalletUsed(o);
+    final int? statusValue = o["status"] as int?;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -226,7 +267,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
-                    "Mã đơn: ${orderDetail!["orderCode"] ?? orderDetail!["id"]}",
+                    "Mã đơn: ${o["orderCode"] ?? o["id"]}",
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
@@ -242,42 +283,95 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 color: _getStatusColor(statusValue).withOpacity(0.12),
                 borderRadius: BorderRadius.circular(18),
               ),
-              child: Text(
-                _statusText(statusValue),
-                style: TextStyle(
-                  color: _getStatusColor(statusValue),
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _statusText(statusValue),
+                    style: TextStyle(
+                      color: _getStatusColor(statusValue),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+                  if (_statusNote(statusValue) != null) ...[
+                    const SizedBox(width: 6),
+                    InkWell(
+                      onTap: () => _showStatusNote(context, statusValue),
+                      child: Icon(Icons.info_outline, size: 18, color: _getStatusColor(statusValue)),
+                    ),
+                  ],
+                ],
               ),
             ),
             const SizedBox(height: 20),
 
             // Người gửi
             _buildSection("Người gửi", [
-              _buildRow("Họ tên", orderDetail!["senderName"] ?? ""),
-              _buildRow("SĐT", orderDetail!["senderPhone"] ?? ""),
-              _buildRow("Địa chỉ", orderDetail!["senderAddress"] ?? ""),
+              _buildRow("Họ tên", o["senderName"]?.toString() ?? ""),
+              _buildRow("SĐT", o["senderPhone"]?.toString() ?? ""),
+              _buildRow("Địa chỉ", o["senderAddress"]?.toString() ?? ""),
             ]),
             const SizedBox(height: 16),
 
             // Người nhận
             _buildSection("Người nhận", [
-              _buildRow("Họ tên", orderDetail!["receiverName"] ?? ""),
-              _buildRow("SĐT", orderDetail!["receiverPhone"] ?? ""),
-              _buildRow("Địa chỉ", orderDetail!["receiverAddress"] ?? ""),
+              _buildRow("Họ tên", o["receiverName"]?.toString() ?? ""),
+              _buildRow("SĐT", o["receiverPhone"]?.toString() ?? ""),
+              _buildRow("Địa chỉ", o["receiverAddress"]?.toString() ?? ""),
             ]),
             const SizedBox(height: 16),
 
-            // Thông tin đơn hàng
-            _buildRow("Khối lượng ước tính", "${orderDetail!["weightEstimate"] ?? 0} kg"),
-            _buildRow("Khối lượng thực tế", "${orderDetail!["weightReal"] ?? 'chưa tính'} kg"),
-            _buildRow("Đơn giá", "${orderDetail!["pricePerKilogram"] ?? 0} đ/kg"),
-            _buildRow("Tiền cọc", "$downPayment đ", valueColor: Colors.orange),
-            _buildRow("Tổng tiền", "$total đ", valueColor: Colors.green, bold: true),
+            // Mặt hàng
+            _buildItemsSection(o),
+            const SizedBox(height: 12),
+
+            // Tiền cọc / ví / tổng
+            _buildRow("Tiền cọc (QR)", _fmtMoney(downPayment), valueColor: Colors.orange),
+            if (walletUsed > 0) _buildRow("Sử dụng ví", _fmtMoney(walletUsed), valueColor: Colors.orange),
+            _buildRow("Tổng tiền", _fmtMoney(total), valueColor: Colors.green, bold: true),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildItemsSection(Map<String, dynamic> o) {
+    final items = (o['items'] as List?) ?? [];
+    if (items.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("Mặt hàng:", style: TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 6),
+        ...items.map((raw) {
+          final it = raw as Map<String, dynamic>;
+          final name = (it['name'] ?? '').toString();
+          final unit = (it['unit'] ?? '').toString();
+          final price = _toDouble(it['price']);
+          final weightReal = _toDouble(it['weightReal']);
+          final weightEstimate = _toDouble(it['weightEstimate']);
+          final weight = weightReal > 0 ? weightReal : weightEstimate;
+          final amount = (it['amount'] is num) ? (it['amount'] as num).toDouble() : price * weight;
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2),
+            child: Row(
+              children: [
+                Expanded(child: Text(name)),
+                Text("[${weight.toStringAsFixed(2)} $unit]"),
+                const SizedBox(width: 8),
+                Text("${price.toStringAsFixed(0)} đ/$unit", style: const TextStyle(color: Colors.green)),
+                const SizedBox(width: 8),
+                Text(_fmtMoney(amount), style: const TextStyle(fontWeight: FontWeight.bold)),
+              ],
+            ),
+          );
+        }).toList(),
+      ],
     );
   }
 
@@ -299,8 +393,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
   }
 
-  Widget _buildRow(String label, String value,
-      {Color? valueColor, bool bold = false}) {
+  Widget _buildRow(String label, String value, {Color? valueColor, bool bold = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(

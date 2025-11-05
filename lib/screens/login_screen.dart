@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
-import 'register_screen.dart';
-import 'forgot_password_screen.dart';
-import 'home_screen.dart';
+import '../screens/register_screen.dart';
+import '../screens/forgot_password_screen.dart';
+import '../screens/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -69,12 +69,22 @@ class _LoginScreenState extends State<LoginScreen> {
         _showSnackBar("Đăng nhập thành công", Colors.green);
 
         // Chuyển sang HomeScreen, truyền accessToken
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => HomeScreen(accessToken: data["accessToken"]),
-          ),
-        );
+        // Điều hướng theo role
+        final role = data["role"] ?? 1;
+
+        if (role == 2) {
+          // Nhà thầu
+          Navigator.pushReplacementNamed(context, "/contractorHome");
+        } else {
+          // User
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => HomeScreen(accessToken: data["accessToken"]),
+            ),
+          );
+        }
+
       } else if (response.statusCode == 401) {
         _showSnackBar("Sai số điện thoại hoặc mật khẩu", Colors.red);
       } else if (response.statusCode == 404) {

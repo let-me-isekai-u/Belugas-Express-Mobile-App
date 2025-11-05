@@ -76,7 +76,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         Future.delayed(const Duration(seconds: 2), () {
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (_) => const LoginScreen()),
+            MaterialPageRoute(builder: (_) => LoginScreen()),
                 (route) => false,
           );
         });
@@ -172,8 +172,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       : () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(
-                          builder: (_) => const LoginScreen()),
+                      MaterialPageRoute(builder: (_) => LoginScreen()),
                     );
                   },
                   child: const Text(

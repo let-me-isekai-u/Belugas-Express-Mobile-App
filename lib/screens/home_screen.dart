@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import '../services/api_service.dart';
-import 'create_order_screen.dart';
-import 'order_screen.dart';
-import 'profile_screen.dart';
-import 'trade_screen.dart';
+import 'package:provider/provider.dart';
+import '../models/home_model.dart';
+import '../screens/create_order_screen.dart';
+import '../screens/order_screen.dart';
+import '../screens/profile_screen.dart';
+import '../screens/trade_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String accessToken;
@@ -14,45 +14,18 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen>
+    with TickerProviderStateMixin {
   int _selectedIndex = 0;
   double _opacity = 0.0;
-
-  String? _fullName;
-  String? _email;
-  String? _phoneNumber;
-  double? _wallet;
-  bool _isLoadingProfile = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchProfile();
+    Future.microtask(() {
+      Provider.of<HomeModel>(context, listen: false).loadProfile(context);
+    });
     _runFadeIn();
-  }
-
-  Future<void> _fetchProfile() async {
-    try {
-      final res = await ApiService.getProfile(accessToken: widget.accessToken);
-      if (res.statusCode == 200) {
-        final data = jsonDecode(res.body);
-        setState(() {
-          _fullName = data['fullName'];
-          _email = data['email'];
-          _phoneNumber = data['phoneNumber'];
-          _wallet = (data['wallet'] as num?)?.toDouble();
-          _isLoadingProfile = false;
-        });
-      } else {
-        setState(() {
-          _isLoadingProfile = false;
-        });
-      }
-    } catch (_) {
-      setState(() {
-        _isLoadingProfile = false;
-      });
-    }
   }
 
   void _runFadeIn() {
@@ -68,39 +41,96 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
   }
 
-  void _onItemTapped(int index) {
+  void _onItemTapped(int index) async {
     if (_selectedIndex == index) return;
     setState(() {
       _selectedIndex = index;
       if (index == 0) {
         _runFadeIn();
+        Provider.of<HomeModel>(context, listen: false).loadProfile(context);
       }
     });
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(HomeModel model) {
+    // Chỉ hiện AppBar đặc biệt ở Home (index 0)
+    if (_selectedIndex == 0) {
+      return Column(
+        children: [
+          _buildCustomAppBar(model),
+          Expanded(child: _buildWelcome()),
+        ],
+      );
+    }
+    // Các tab khác giữ nguyên, không hiện AppBar đặc biệt
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 400),
       transitionBuilder: (Widget child, Animation<double> animation) {
         return FadeTransition(opacity: animation, child: child);
       },
-      child: _selectedIndex == 0
-          ? _buildWelcome()
-          : _selectedIndex == 1
+      child: _selectedIndex == 1
           ? const CreateOrderScreen()
           : _selectedIndex == 2
           ? const OrderScreen()
           : _selectedIndex == 3
           ? TradeScreen(accessToken: widget.accessToken)
-          : (_isLoadingProfile
+          : (model.isLoading
           ? const Center(child: CircularProgressIndicator())
           : ProfileScreen(
-        fullName: _fullName ?? "Tên tài khoản",
-        email: _email ?? "N/A",
-        phoneNumber: _phoneNumber ?? "N/A",
+        fullName: model.fullName ?? "Tên tài khoản",
+        email: model.email ?? "N/A",
+        phoneNumber: model.phoneNumber ?? "N/A",
       )),
     );
   }
+
+  Widget _buildCustomAppBar(HomeModel model) {
+    return Container(
+      width: double.infinity, // Kéo ngang hết màn hình
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF2196F3), Color(0xFF64B5F6)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 40, bottom: 16),
+      child: Align(
+        alignment: Alignment.centerLeft, // Căn hết về bên trái
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            model.isLoading
+                ? const SizedBox(
+              height: 28,
+              child: LinearProgressIndicator(color: Colors.white),
+            )
+                : Text(
+              model.fullName ?? "Tên tài khoản",
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 4),
+            if (!model.isLoading)
+              Text(
+                model.wallet != null
+                    ? "Ví: ${model.wallet!.toStringAsFixed(0)} VND"
+                    : "Ví: N/A",
+                style: const TextStyle(
+                  fontSize: 15,
+                  color: Colors.white70,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
 
   Widget _buildWelcome() {
     return Center(
@@ -165,125 +195,72 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   List<Map<String, dynamic>> get _tabs => [
-    {
-      'icon': Icons.home,
-      'label': 'Trang chủ',
-    },
-    {
-      'icon': Icons.add_circle,
-      'label': 'Tạo đơn',
-    },
-    {
-      'icon': Icons.list_alt,
-      'label': 'Đơn hàng',
-    },
-    {
-      'icon': Icons.receipt_long,
-      'label': 'Giao dịch',
-    },
-    {
-      'icon': Icons.person,
-      'label': 'Tài khoản',
-    },
+    {'icon': Icons.home, 'label': 'Trang chủ'},
+    {'icon': Icons.add_circle, 'label': 'Tạo đơn'},
+    {'icon': Icons.list_alt, 'label': 'Đơn hàng'},
+    {'icon': Icons.receipt_long, 'label': 'Giao dịch'},
+    {'icon': Icons.person, 'label': 'Tài khoản'},
   ];
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFFB3C6E7), Color(0xFFE3F0FF)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(80),
-          child: AppBar(
-            elevation: 0,
+    return Consumer<HomeModel>(
+      builder: (context, model, _) {
+        return Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFFB3C6E7), Color(0xFFE3F0FF)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Scaffold(
             backgroundColor: Colors.transparent,
-            flexibleSpace: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF2196F3), Color(0xFF64B5F6)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-            ),
-            automaticallyImplyLeading: false,
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _isLoadingProfile
-                    ? const SizedBox(height: 28, child: LinearProgressIndicator())
-                    : Text(
-                  _fullName ?? "Tên tài khoản",
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+            // Ẩn AppBar mặc định, chỉ dùng AppBar custom ở Home tab
+            appBar: null,
+            body: _buildBody(model),
+            bottomNavigationBar: Container(
+              decoration: BoxDecoration(
+                color: Colors.blue[300],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.blue[200]!.withOpacity(0.2),
+                    blurRadius: 16,
+                    offset: const Offset(0, -2),
                   ),
+                ],
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(22),
+                  topRight: Radius.circular(22),
                 ),
-                const SizedBox(height: 5),
-                _isLoadingProfile
-                    ? Container()
-                    : Text(
-                  _wallet != null
-                      ? "Ví: ${_wallet!.toStringAsFixed(0)} VND"
-                      : "Ví: N/A",
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.white70,
-                  ),
-                ),
-              ],
+              ),
+              child: BottomNavigationBar(
+                type: BottomNavigationBarType.fixed,
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                selectedIconTheme: const IconThemeData(size: 32),
+                unselectedIconTheme: const IconThemeData(size: 26),
+                currentIndex: _selectedIndex,
+                onTap: _onItemTapped,
+                selectedItemColor: Colors.white,
+                unselectedItemColor: Colors.white70,
+                showSelectedLabels: true,
+                showUnselectedLabels: true,
+                selectedLabelStyle:
+                const TextStyle(fontWeight: FontWeight.bold),
+                unselectedLabelStyle:
+                const TextStyle(fontWeight: FontWeight.w400),
+                items: _tabs
+                    .map((tab) => BottomNavigationBarItem(
+                  icon: Icon(tab['icon']),
+                  label: tab['label'],
+                ))
+                    .toList(),
+              ),
             ),
           ),
-        ),
-        body: _buildBody(),
-        bottomNavigationBar: Container(
-          decoration: BoxDecoration(
-            color: Colors.blue[300],
-            boxShadow: [
-              BoxShadow(
-                color: Colors.blue[200]!.withOpacity(0.2),
-                blurRadius: 16,
-                offset: const Offset(0, -2),
-              ),
-            ],
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(22),
-              topRight: Radius.circular(22),
-            ),
-          ),
-          child: BottomNavigationBar(
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            selectedIconTheme: const IconThemeData(size: 32),
-            unselectedIconTheme: const IconThemeData(size: 26),
-            currentIndex: _selectedIndex,
-            onTap: _onItemTapped,
-            selectedItemColor: Colors.white,
-            unselectedItemColor: Colors.white70,
-            showSelectedLabels: true,
-            showUnselectedLabels: true,
-            selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-            unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w400),
-            items: _tabs
-                .map(
-                  (tab) => BottomNavigationBarItem(
-                icon: Icon(tab['icon']),
-                label: tab['label'],
-              ),
-            )
-                .toList(),
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
