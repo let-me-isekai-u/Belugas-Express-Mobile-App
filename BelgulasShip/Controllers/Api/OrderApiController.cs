@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 using System.Security.Claims;
 
 namespace BelgulasShip.Controllers.Api
@@ -16,9 +17,150 @@ namespace BelgulasShip.Controllers.Api
     {
         private readonly ApplicationDbContext db=new ApplicationDbContext();
 
-        /// <summary>
-        /// Lấy chi tiết đơn hàng theo Id
-        /// </summary>
+        //Cập nhật lại danh sách đơn hàng
+        [HttpPost("update-order-item")]
+        public async Task<IActionResult> UpdateOrderItems([FromBody] UpdateOrderItemsRequest request)
+        {
+            //check token xem có phải nhà thầu không
+            var accountId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            int role = db.Accounts.FirstOrDefault(a => a.Id == accountId).Role ?? 0;
+            if (role != 2)
+                return Unauthorized("Account không có vai trò là nhà thầu");
+            //Kiểm tra đơn hàng có tồn tại không
+            var order = await db.Orders.FindAsync(request.OrderId);
+            if (order == null)
+                return NotFound(new { success = false, message = "Không tìm thấy đơn hàng." });
+
+            // Lấy danh sách OrderItem cũ
+            var existingItems = db.OrderItems.Where(x => x.OrderId == request.OrderId).ToList();
+
+            // 1️⃣ Xóa toàn bộ item cũ
+            if (existingItems.Any())
+                db.OrderItems.RemoveRange(existingItems);
+
+            // 2️⃣ Thêm lại toàn bộ item mới
+            decimal total = 0;
+            foreach (var item in request.OrderItems)
+            {
+                var newItem = new OrderItem
+                {
+                    OrderId = request.OrderId,
+                    PricingTableId = item.PricingTableId,
+                    WeightEstimate = item.WeightEstimate,
+                    Price = item.Price,
+                    Amount = item.WeightEstimate * item.Price
+                };
+                total += item.WeightEstimate * item.Price;
+                db.OrderItems.Add(newItem);
+            }
+
+            // 3️⃣ Cập nhật thời gian sửa đơn
+            order.Status = 4;
+            order.UpdateDate = DateTime.Now;
+            //cập nhật trạng thái
+            var orderStatus = new StatusOrderLog
+            {
+                OrderId = order.Id,
+                Status = "Chờ thanh toán",
+                UpdateBy = accountId,
+                UpdateDate = DateTime.Now
+            };
+            db.StatusOrderLogs.Add(orderStatus);
+            //Kiểm tra nếu tiền cọc đủ thì chuyển luôn sang trạng thái 5
+            if(total <= order.DownPayment)
+            {
+                // 3️⃣ Cập nhật thời gian sửa đơn
+                order.Status = 5;
+                order.UpdateDate = DateTime.Now;
+                //cập nhật trạng thái
+                var orderStatus1 = new StatusOrderLog
+                {
+                    OrderId = order.Id,
+                    Status = "Chờ gửi hàng",
+                    UpdateBy = accountId,
+                    UpdateDate = DateTime.Now
+                };
+                db.StatusOrderLogs.Add(orderStatus1);
+
+                if (total < order.DownPayment)
+                {
+                    db.Accounts.FirstOrDefault(a => a.Id == accountId).Wallet += order.DownPayment - total;
+                }
+            }
+
+            await db.SaveChangesAsync();
+
+            return Ok(new { success = true, message = "Cập nhật chi tiết đơn hàng thành công." });
+        }
+        public class UpdateOrderItemsRequest
+        {
+            public int OrderId { get; set; }
+            public List<OrderItemDto> OrderItems { get; set; }
+        }
+
+
+        //Thay đổi trạng thái từ 2 sang 3
+        [HttpPut("change-status")]        
+        public async Task<ActionResult> ChangeStatus2To3([FromBody] ChangeStatusRequest request)
+        {
+            //check token xem có phải nhà thầu không
+            var accountId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            int role = db.Accounts.FirstOrDefault(a => a.Id == accountId).Role ?? 0;
+            if (role != 2)
+                return Unauthorized("Account không có vai trò là nhà thầu");
+
+            //check xem đơn hàng tồn tại hay không
+            var order = await db.Orders.FirstOrDefaultAsync(o => o.Id == request.OrderId);
+            if (order == null)
+            {
+                return NotFound(new { message = "Không tìm thấy đơn hàng." });
+            }
+
+            //Không được đổi trạng thái 1 sang 2, và từ 4 sang 5
+            if (order.Status == 1 || order.Status == 4)
+            {
+                return StatusCode(222, new {message="Không thể thay đổi trạng thái 1 sang 2 hoặc 4 sang 5 từ api này!" });
+            }
+
+            // 3. Kiểm tra hợp lệ — chỉ được tăng 1 đơn vị
+            if (request.NewStatus != order.Status + 1)
+            {
+                return BadRequest(new
+                {
+                    message = $"Không thể chuyển trạng thái từ {order.Status} sang {request.NewStatus}. " +
+                              $"Chỉ được phép chuyển sang {order.Status + 1}."
+                });
+            }
+
+            // Cập nhật trạng thái
+            order.Status = request.NewStatus;
+            order.UpdateDate = DateTime.Now;
+
+            var orderStatus = new StatusOrderLog
+            {
+                OrderId = order.Id,
+                Status = "Đã đến kho",
+                UpdateBy = accountId,
+                UpdateDate = DateTime.Now
+            };
+            db.StatusOrderLogs.Add(orderStatus);
+            await db.SaveChangesAsync();
+
+            return Ok(new
+            {
+                success = true,
+                message = $"Cập nhật trạng thái đơn hàng {order.OrderCode} thành công.",
+                newStatus = order.Status,
+                orderId = order.Id,
+
+            });
+        }
+        public class ChangeStatusRequest
+        {
+            public int OrderId { get; set; }
+            public int NewStatus { get; set; }
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetOrderById(int id)
         {
@@ -224,7 +366,7 @@ namespace BelgulasShip.Controllers.Api
                 var orderStatus = new StatusOrderLog
                 {
                     OrderId = order.Id,
-                    Status = "Chờ xác nhận",
+                    Status = "Đang đến lấy hàng",
                     UpdateBy = accountId,
                     UpdateDate = DateTime.Now
                 };

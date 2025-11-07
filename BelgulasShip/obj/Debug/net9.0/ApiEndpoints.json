@@ -142,6 +142,16 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "BelgulasShip.Controllers.Api.ContractorApiController",
+    "Method": "OrderByContractor",
+    "RelativePath": "api/ContractorApi/orders",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "BelgulasShip.Controllers.Api.CountryApiController",
     "Method": "GetCountry",
     "RelativePath": "api/CountryApi/get-country",
@@ -179,6 +189,22 @@
   },
   {
     "ContainingType": "BelgulasShip.Controllers.Api.OrderApiController",
+    "Method": "ChangeStatus2To3",
+    "RelativePath": "api/OrderApi/change-status-2-to-3",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "BelgulasShip.Controllers.Api.OrderApiController\u002BChangeStatusRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BelgulasShip.Controllers.Api.OrderApiController",
     "Method": "CreateOrder",
     "RelativePath": "api/OrderApi/create",
     "HttpMethod": "POST",
@@ -201,6 +227,38 @@
     "IsController": true,
     "Order": 0,
     "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BelgulasShip.Controllers.Api.OrderApiController",
+    "Method": "UpdateOrderItems",
+    "RelativePath": "api/OrderApi/update-order-item",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "BelgulasShip.Controllers.Api.OrderApiController\u002BUpdateOrderItemsRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BelgulasShip.Controllers.Api.PaymentApiController",
+    "Method": "CheckGoogleSheetTransaction",
+    "RelativePath": "api/PaymentApi/check-transaction",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "BelgulasShip.Controllers.Api.PaymentApiController\u002BCheckTransactionRequest",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": []
   },
   {

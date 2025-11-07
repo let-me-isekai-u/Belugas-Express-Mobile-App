@@ -3,40 +3,28 @@
   "WorkspaceRootPath": "C:\\SangHV\\Begulas\\Belugas-Express-Mobile-App\\BelgulasShip\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|c:\\sanghv\\begulas\\belugas-express-mobile-app\\belgulasship\\models\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|solutionrelative:models\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|c:\\sanghv\\begulas\\belugas-express-mobile-app\\belgulasship\\controllers\\api\\orderapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|solutionrelative:controllers\\api\\orderapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|c:\\sanghv\\begulas\\belugas-express-mobile-app\\belgulasship\\controllers\\api\\accountapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|solutionrelative:controllers\\api\\accountapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|c:\\sanghv\\begulas\\belugas-express-mobile-app\\belgulasship\\controllers\\api\\contractorapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|solutionrelative:controllers\\api\\contractorapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|c:\\sanghv\\begulas\\belugas-express-mobile-app\\belgulasship\\dtos\\registerrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|solutionrelative:dtos\\registerrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|c:\\sanghv\\begulas\\belugas-express-mobile-app\\belgulasship\\controllers\\api\\paymentapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|solutionrelative:controllers\\api\\paymentapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|c:\\sanghv\\begulas\\belugas-express-mobile-app\\belgulasship\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|c:\\sanghv\\begulas\\belugas-express-mobile-app\\belgulasship\\controllers\\api\\statusorderlogapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|solutionrelative:controllers\\api\\statusorderlogapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|c:\\sanghv\\begulas\\belugas-express-mobile-app\\belgulasship\\controllers\\api\\addressapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|solutionrelative:controllers\\api\\addressapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|c:\\sanghv\\begulas\\belugas-express-mobile-app\\belgulasship\\controllers\\api\\orderapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|solutionrelative:controllers\\api\\orderapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|c:\\sanghv\\begulas\\belugas-express-mobile-app\\belgulasship\\controllers\\api\\pricingtableapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|solutionrelative:controllers\\api\\pricingtableapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|c:\\sanghv\\begulas\\belugas-express-mobile-app\\belgulasship\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|solutionrelative:properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|c:\\sanghv\\begulas\\belugas-express-mobile-app\\belgulasship\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{917809C3-A85B-4580-9914-46A3A68E2E72}|BelgulasShip.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -50,7 +38,7 @@
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 5,
               "Title": "launchSettings.json",
               "DocumentMoniker": "C:\\SangHV\\Begulas\\Belugas-Express-Mobile-App\\BelgulasShip\\Properties\\launchSettings.json",
               "RelativeDocumentMoniker": "Properties\\launchSettings.json",
@@ -63,44 +51,59 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "RegisterRequest.cs",
-              "DocumentMoniker": "C:\\SangHV\\Begulas\\Belugas-Express-Mobile-App\\BelgulasShip\\DTOs\\RegisterRequest.cs",
-              "RelativeDocumentMoniker": "DTOs\\RegisterRequest.cs",
-              "ToolTip": "C:\\SangHV\\Begulas\\Belugas-Express-Mobile-App\\BelgulasShip\\DTOs\\RegisterRequest.cs",
-              "RelativeToolTip": "DTOs\\RegisterRequest.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAfAAAAAAAAAA==",
+              "DocumentIndex": 3,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\SangHV\\Begulas\\Belugas-Express-Mobile-App\\BelgulasShip\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\SangHV\\Begulas\\Belugas-Express-Mobile-App\\BelgulasShip\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAhAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-04T08:13:09.623Z"
+              "WhenOpened": "2025-09-13T11:55:05.295Z",
+              "IsPinned": true
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "ApplicationDbContext.cs",
-              "DocumentMoniker": "C:\\SangHV\\Begulas\\Belugas-Express-Mobile-App\\BelgulasShip\\Models\\ApplicationDbContext.cs",
-              "RelativeDocumentMoniker": "Models\\ApplicationDbContext.cs",
-              "ToolTip": "C:\\SangHV\\Begulas\\Belugas-Express-Mobile-App\\BelgulasShip\\Models\\ApplicationDbContext.cs",
-              "RelativeToolTip": "Models\\ApplicationDbContext.cs",
-              "ViewState": "AgIAABwAAAAAAAAAAADwvywAAAAAAAAAAAAAAA==",
+              "Title": "OrderApiController.cs",
+              "DocumentMoniker": "C:\\SangHV\\Begulas\\Belugas-Express-Mobile-App\\BelgulasShip\\Controllers\\Api\\OrderApiController.cs",
+              "RelativeDocumentMoniker": "Controllers\\Api\\OrderApiController.cs",
+              "ToolTip": "C:\\SangHV\\Begulas\\Belugas-Express-Mobile-App\\BelgulasShip\\Controllers\\Api\\OrderApiController.cs",
+              "RelativeToolTip": "Controllers\\Api\\OrderApiController.cs",
+              "ViewState": "AgIAAHoAAAAAAAAAAAAwwIwAAAAjAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-04T08:10:49.981Z",
+              "WhenOpened": "2025-09-12T07:41:55.478Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ContractorApiController.cs",
+              "DocumentMoniker": "C:\\SangHV\\Begulas\\Belugas-Express-Mobile-App\\BelgulasShip\\Controllers\\Api\\ContractorApiController.cs",
+              "RelativeDocumentMoniker": "Controllers\\Api\\ContractorApiController.cs",
+              "ToolTip": "C:\\SangHV\\Begulas\\Belugas-Express-Mobile-App\\BelgulasShip\\Controllers\\Api\\ContractorApiController.cs",
+              "RelativeToolTip": "Controllers\\Api\\ContractorApiController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEcAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-04T09:37:30.798Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "PaymentApiController.cs",
+              "DocumentMoniker": "C:\\SangHV\\Begulas\\Belugas-Express-Mobile-App\\BelgulasShip\\Controllers\\Api\\PaymentApiController.cs",
+              "RelativeDocumentMoniker": "Controllers\\Api\\PaymentApiController.cs",
+              "ToolTip": "C:\\SangHV\\Begulas\\Belugas-Express-Mobile-App\\BelgulasShip\\Controllers\\Api\\PaymentApiController.cs",
+              "RelativeToolTip": "Controllers\\Api\\PaymentApiController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAF0AAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-04T08:33:02.577Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 4,
-              "Title": "AddressApiController.cs",
-              "DocumentMoniker": "C:\\SangHV\\Begulas\\Belugas-Express-Mobile-App\\BelgulasShip\\Controllers\\Api\\AddressApiController.cs",
-              "RelativeDocumentMoniker": "Controllers\\Api\\AddressApiController.cs",
-              "ToolTip": "C:\\SangHV\\Begulas\\Belugas-Express-Mobile-App\\BelgulasShip\\Controllers\\Api\\AddressApiController.cs",
-              "RelativeToolTip": "Controllers\\Api\\AddressApiController.cs",
-              "ViewState": "AgIAAAsAAAAAAAAAAAAAwB4AAAAyAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-04T06:55:19.911Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
               "Title": "StatusOrderLogApiController.cs",
               "DocumentMoniker": "C:\\SangHV\\Begulas\\Belugas-Express-Mobile-App\\BelgulasShip\\Controllers\\Api\\StatusOrderLogApiController.cs",
               "RelativeDocumentMoniker": "Controllers\\Api\\StatusOrderLogApiController.cs",
@@ -109,55 +112,6 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-03T05:43:24.952Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "AccountApiController.cs",
-              "DocumentMoniker": "C:\\SangHV\\Begulas\\Belugas-Express-Mobile-App\\BelgulasShip\\Controllers\\Api\\AccountApiController.cs",
-              "RelativeDocumentMoniker": "Controllers\\Api\\AccountApiController.cs",
-              "ToolTip": "C:\\SangHV\\Begulas\\Belugas-Express-Mobile-App\\BelgulasShip\\Controllers\\Api\\AccountApiController.cs",
-              "RelativeToolTip": "Controllers\\Api\\AccountApiController.cs",
-              "ViewState": "AgIAAJEAAAAAAAAAAAAcwKQAAAArAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-03T03:54:52.905Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\SangHV\\Begulas\\Belugas-Express-Mobile-App\\BelgulasShip\\Program.cs",
-              "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "C:\\SangHV\\Begulas\\Belugas-Express-Mobile-App\\BelgulasShip\\Program.cs",
-              "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAEgAAAAAAAAAAAAAAFYAAAARAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-13T11:55:05.295Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "PricingTableApiController.cs",
-              "DocumentMoniker": "C:\\SangHV\\Begulas\\Belugas-Express-Mobile-App\\BelgulasShip\\Controllers\\Api\\PricingTableApiController.cs",
-              "RelativeDocumentMoniker": "Controllers\\Api\\PricingTableApiController.cs",
-              "ToolTip": "C:\\SangHV\\Begulas\\Belugas-Express-Mobile-App\\BelgulasShip\\Controllers\\Api\\PricingTableApiController.cs",
-              "RelativeToolTip": "Controllers\\Api\\PricingTableApiController.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAAABcAAAAbAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-13T09:48:15.411Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "OrderApiController.cs",
-              "DocumentMoniker": "C:\\SangHV\\Begulas\\Belugas-Express-Mobile-App\\BelgulasShip\\Controllers\\Api\\OrderApiController.cs",
-              "RelativeDocumentMoniker": "Controllers\\Api\\OrderApiController.cs",
-              "ToolTip": "C:\\SangHV\\Begulas\\Belugas-Express-Mobile-App\\BelgulasShip\\Controllers\\Api\\OrderApiController.cs",
-              "RelativeToolTip": "Controllers\\Api\\OrderApiController.cs",
-              "ViewState": "AgIAABQAAAAAAAAAAAAAwIgAAABcAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-12T07:41:55.478Z"
             }
           ]
         }
