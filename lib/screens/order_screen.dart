@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
 
 import '../models/order_model.dart';
 import '../services/api_service.dart';
@@ -20,12 +19,16 @@ class _OrderScreenState extends State<OrderScreen> {
   Timer? _pollingTimer;
   double _walletBalance = 0.0;
   int _userId = 0;
+  String _accessToken = '';
+  final Set<int> _processingOrderIds = {};
 
   @override
   void initState() {
     super.initState();
     _futureOrders = _loadOrders();
     _loadProfileMeta();
+    // Always fetch wallet on entering this screen
+    _fetchWallet();
   }
 
   @override
@@ -37,15 +40,62 @@ class _OrderScreenState extends State<OrderScreen> {
   Future<void> _loadProfileMeta() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString("accessToken") ?? "";
+    _accessToken = token;
     _userId = prefs.getInt("id") ?? 0;
     if (token.isEmpty) return;
 
-    final res = await ApiService.getProfile(accessToken: token);
-    if (res.statusCode == 200) {
-      final parsed = jsonDecode(res.body);
-      setState(() {
-        _walletBalance = (parsed['wallet'] is num) ? (parsed['wallet'] as num).toDouble() : 0.0;
-      });
+    try {
+      final res = await ApiService.getProfile(accessToken: token);
+      if (res.statusCode == 200) {
+        final parsed = jsonDecode(res.body);
+        setState(() {
+          _walletBalance = (parsed['wallet'] is num) ? (parsed['wallet'] as num).toDouble() : 0.0;
+        });
+      }
+    } catch (e) {
+      debugPrint("Lỗi khi load profile meta: $e");
+    }
+  }
+
+  Future<void> _fetchWallet() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("accessToken") ?? _accessToken;
+    if (token.isEmpty) {
+      return;
+    }
+    try {
+      final res = await ApiService.getWalletBalance(accessToken: token);
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body);
+        // Expecting { "success": true, "wallet": 123000 }
+        if (body is Map && (body['success'] == true || body.containsKey('wallet'))) {
+          final w = body['wallet'];
+          if (w is num) {
+            setState(() {
+              _walletBalance = w.toDouble();
+              _accessToken = token;
+            });
+          } else if (w is String) {
+            final parsed = double.tryParse(w);
+            if (parsed != null) {
+              setState(() => _walletBalance = parsed);
+            }
+          }
+        } else {
+          debugPrint("getWalletBalance unexpected body: ${res.body}");
+        }
+      } else if (res.statusCode == 401) {
+        // token expired
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.")),
+          );
+        }
+      } else {
+        debugPrint("getWalletBalance failed: ${res.statusCode} ${res.body}");
+      }
+    } catch (e) {
+      debugPrint("Error fetching wallet: $e");
     }
   }
 
@@ -64,155 +114,6 @@ class _OrderScreenState extends State<OrderScreen> {
     }
   }
 
-  Future<void> _handlePayment(BuildContext context, Order order) async {
-    final remaining = order.remainingVsDownPayment;
-    if (remaining <= 0) return;
-
-    double extraWalletUsed = 0.0;
-    bool useWallet = false;
-    await _loadProfileMeta();
-
-    final now = DateTime.now();
-    final timestamp = "${now.hour.toString().padLeft(2, '0')}"
-        "${now.minute.toString().padLeft(2, '0')}"
-        "${now.second.toString().padLeft(2, '0')}";
-    final description = "${_userId}${timestamp}";
-
-    void openDialog() {
-      _pollingTimer?.cancel();
-
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => StatefulBuilder(
-          builder: (context, setStateDialog) {
-            final maxWalletCanUse = useWallet ? (_walletBalance < remaining ? _walletBalance : remaining) : 0.0;
-            if (extraWalletUsed > maxWalletCanUse) {
-              extraWalletUsed = maxWalletCanUse;
-            }
-
-            final amountForQr = (remaining - extraWalletUsed);
-            final qrUrl =
-                "https://img.vietqr.io/image/MB-34567200288888-compact2.png?amount=${amountForQr.toStringAsFixed(0)}&addInfo=${Uri.encodeComponent(description)}&accountName=LY%20NHAT%20ANH";
-
-            if (amountForQr <= 0) {
-              Future.microtask(() {
-                Navigator.pop(context);
-                setState(() {
-                  _futureOrders = _loadOrders();
-                });
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => OrderDetailScreen(orderId: order.id)),
-                );
-              });
-            } else {
-              _startPolling(description, amountForQr, onMatched: () {
-                _pollingTimer?.cancel();
-                Navigator.pop(context);
-                setState(() {
-                  _futureOrders = _loadOrders();
-                });
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => OrderDetailScreen(orderId: order.id)),
-                );
-              });
-            }
-
-            return AlertDialog(
-              title: const Text("Thanh toán bổ sung"),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: useWallet,
-                        onChanged: (v) {
-                          setStateDialog(() {
-                            useWallet = v ?? false;
-                            if (!useWallet) extraWalletUsed = 0.0;
-                          });
-                        },
-                      ),
-                      const Text("Dùng ví"),
-                      const SizedBox(width: 8),
-                      if (useWallet)
-                        Text(
-                          "Số dư: ${_walletBalance.toStringAsFixed(0)} đ",
-                          style: const TextStyle(color: Colors.green, fontWeight: FontWeight.w600),
-                        ),
-                    ],
-                  ),
-                  if (useWallet)
-                    Slider(
-                      value: extraWalletUsed,
-                      min: 0.0,
-                      max: maxWalletCanUse > 0 ? maxWalletCanUse : 0.0,
-                      divisions: (maxWalletCanUse > 0 ? maxWalletCanUse : 1).toInt(),
-                      label: extraWalletUsed.toStringAsFixed(0),
-                      onChanged: (v) {
-                        setStateDialog(() {
-                          extraWalletUsed = v;
-                        });
-                      },
-                    ),
-                  const SizedBox(height: 12),
-                  Text("Cần thanh toán: ${amountForQr.toStringAsFixed(0)} đ",
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 12),
-                  if (amountForQr > 0)
-                    Image.network(qrUrl, height: 200, fit: BoxFit.contain),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    _pollingTimer?.cancel();
-                    Navigator.pop(context);
-                  },
-                  child: const Text("Hủy"),
-                ),
-              ],
-            );
-          },
-        ),
-      );
-    }
-
-    openDialog();
-  }
-
-  void _startPolling(String description, double amountForQr, {required VoidCallback onMatched}) {
-    _pollingTimer?.cancel();
-    Future.delayed(const Duration(seconds: 5), () {
-      _pollingTimer?.cancel();
-      _pollingTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
-        final res = await http.get(Uri.parse(
-            "https://script.google.com/macros/s/AKfycbyB5JISCpIjFJp9ikNS00RP34ywViepMogpyjAXaLgimbYkqSFb2KiY5APofTMW2arP_A/exec"));
-        if (res.statusCode == 200) {
-          try {
-            final body = jsonDecode(res.body);
-            final List txs = body["data"] ?? [];
-            for (var tx in txs) {
-              final double txAmount = (tx["values_0_2"] is num)
-                  ? (tx["values_0_2"] as num).toDouble()
-                  : double.tryParse(tx["values_0_2"]?.toString() ?? "") ?? 0.0;
-              final String txDesc = tx["values_0_9"].toString();
-
-              if (txAmount == amountForQr && txDesc.contains(description)) {
-                _pollingTimer?.cancel();
-                onMatched();
-                return;
-              }
-            }
-          } catch (_) {}
-        }
-      });
-    });
-  }
-
   String _fmtMoney(num v) => "${v.toStringAsFixed(0)} đ";
 
   void _showStatusNote(BuildContext context, Order order) {
@@ -227,6 +128,168 @@ class _OrderScreenState extends State<OrderScreen> {
         ],
       ),
     );
+  }
+
+  void _showQrDialog(Order order) {
+    final total = order.total;
+    final downPayment = order.downPayment;
+    final toPay = total - downPayment;
+    final now = DateTime.now();
+    final timestamp =
+        "${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}";
+    final description = "${_userId}$timestamp";
+
+    final qrUrl =
+        "https://img.vietqr.io/image/MB-34567200288888-compact2.png?amount=${toPay.toStringAsFixed(0)}&addInfo=${description}&accountName=LY%20NHAT%20ANH";
+
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text("Quét mã QR để thanh toán",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: Colors.blue)),
+              const SizedBox(height: 16),
+              Image.network(qrUrl, height: 240, width: 240, fit: BoxFit.contain, errorBuilder: (ctx, err, st) {
+                return const SizedBox(height: 240, width: 240, child: Center(child: Icon(Icons.broken_image)));
+              }),
+              const SizedBox(height: 10),
+              Text("Số tiền: ${_fmtMoney(toPay)}",
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text("Nội dung: $description", style: const TextStyle(color: Colors.orange)),
+              const SizedBox(height: 5),
+              const Text(
+                "Sau khi chuyển khoản, hệ thống sẽ kiểm tra tự động.\nVui lòng không tắt màn hình khi chưa xác nhận.",
+                style: TextStyle(fontSize: 13, color: Colors.grey),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 10),
+              TextButton.icon(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close, color: Colors.red),
+                label: const Text("Đóng mã QR", style: TextStyle(color: Colors.red)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _attemptWalletPayment(Order order) async {
+    // Ensure we have the latest wallet balance
+    await _fetchWallet();
+
+    final toPay = order.total - order.downPayment;
+
+    if (_walletBalance < toPay) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Số dư ví không đủ. Vui lòng nạp thêm."), backgroundColor: Colors.red),
+        );
+      }
+      return;
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("accessToken") ?? _accessToken;
+    if (token.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Vui lòng đăng nhập."), backgroundColor: Colors.red),
+        );
+      }
+      return;
+    }
+
+    setState(() => _processingOrderIds.add(order.id));
+    try {
+      final res = await ApiService.confirmOrderPayment(accessToken: token, orderId: order.id);
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        if (data is Map && (data['success'] == true || data['newStatus'] != null)) {
+          // Payment/confirmation succeeded
+          final orderId = data['orderId'] ?? order.id;
+          if (mounted) {
+            showDialog(
+              context: context,
+              builder: (_) => AlertDialog(
+                title: const Text("Thành công"),
+                content: Text(data['message']?.toString() ?? "Cập nhật trạng thái đơn thành công."),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      // Navigate to detail screen, replace this screen
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => OrderDetailScreen(orderId: orderId)),
+                      );
+                    },
+                    child: const Text("OK"),
+                  ),
+                ],
+              ),
+            );
+          }
+          // Refresh orders in background WITHOUT passing a Future into setState
+          _futureOrders = _loadOrders();
+          if (mounted) {
+            setState(() {}); // synchronous update only
+          }
+          return;
+        } else {
+          final msg = (data is Map && data['message'] != null) ? data['message'].toString() : "Không thể xác nhận đơn.";
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.orange));
+          }
+        }
+      } else if (res.statusCode == 111) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Số dư ví không đủ để thanh toán!"), backgroundColor: Colors.red),
+          );
+        }
+      } else if (res.statusCode == 222) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Đơn hàng này đang không ở trạng thái 4"), backgroundColor: Colors.orange),
+          );
+        }
+      } else if (res.statusCode == 401) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại."), backgroundColor: Colors.red),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Lỗi khi xác nhận đơn: ${res.statusCode}"), backgroundColor: Colors.red),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint("Error confirming order payment: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Lỗi kết nối: $e"), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _processingOrderIds.remove(order.id));
+      }
+    }
   }
 
   @override
@@ -270,44 +333,71 @@ class _OrderScreenState extends State<OrderScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(children: [
-                        Icon(o.statusIcon, color: o.statusColor),
-                        const SizedBox(width: 8),
-                        Text(o.statusText,
-                            style: TextStyle(fontWeight: FontWeight.bold, color: o.statusColor)),
-                        if (o.statusNote != null)
-                          IconButton(
-                            onPressed: () => _showStatusNote(context, o),
-                            icon: Icon(Icons.info_outline, color: o.statusColor, size: 18),
+                      // Fix tràn cho dòng trạng thái
+                      Row(
+                        children: [
+                          Icon(o.statusIcon, color: o.statusColor),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(o.statusText,
+                                style: TextStyle(fontWeight: FontWeight.bold, color: o.statusColor),
+                                overflow: TextOverflow.ellipsis),
                           ),
-                      ]),
+                          if (o.statusNote != null)
+                            IconButton(
+                              onPressed: () => _showStatusNote(context, o),
+                              icon: Icon(Icons.info_outline, color: o.statusColor, size: 18),
+                              tooltip: "Chi tiết trạng thái",
+                            ),
+                        ],
+                      ),
                       const SizedBox(height: 4),
                       Text("Mã đơn: ${o.orderCode}", style: const TextStyle(fontSize: 15)),
                       const SizedBox(height: 4),
-                      Text("Người gửi: ${o.senderName} (${o.senderPhone})"),
-                      Text("Người nhận: ${o.receiverName}"),
-                      Text("Địa chỉ: ${o.receiverAddress}"),
+                      Text("Người gửi: ${o.senderName} (${o.senderPhone})", overflow: TextOverflow.ellipsis),
+                      Text("Người nhận: ${o.receiverName}", overflow: TextOverflow.ellipsis),
+                      Text("Địa chỉ: ${o.receiverAddress}", overflow: TextOverflow.ellipsis),
                       const Divider(height: 18),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text("Tổng: ${_fmtMoney(o.total)}"),
-                          Text("Cọc: ${_fmtMoney(o.displayedDownPayment)}"),
+                          Expanded(
+                            child: Text("Tổng: ${_fmtMoney(o.total)}",
+                                style: const TextStyle(fontWeight: FontWeight.w500)),
+                          ),
+                          Expanded(
+                            child: Text("Cọc: ${_fmtMoney(o.displayedDownPayment)}",
+                              textAlign: TextAlign.right,
+                              style: const TextStyle(fontWeight: FontWeight.w500),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                         ],
                       ),
-                      if (o.canShowPayButton)
+                      // Chỉ hiện nút thanh toán khi status == 4 và tiền cọc < tổng
+                      if (o.status == 4 && o.downPayment < o.total)
                         Align(
                           alignment: Alignment.centerRight,
-                          child: ElevatedButton.icon(
+                          child: _processingOrderIds.contains(o.id)
+                              ? const SizedBox(
+                            height: 36,
+                            width: 36,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                              : ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.orange,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            onPressed: () => _handlePayment(context, o),
+                            onPressed: () => _attemptWalletPayment(o),
                             icon: const Icon(Icons.payment),
-                            label: Text("Thanh toán ${_fmtMoney(o.remainingVsDownPayment)}"),
+                            // NOTE: Do not use Flexible/Expanded directly inside label.
+                            label: Text(
+                              "Thanh toán ${_fmtMoney(o.total - o.downPayment)}",
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ),
                     ],

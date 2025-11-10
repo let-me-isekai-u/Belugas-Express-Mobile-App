@@ -5,6 +5,8 @@ import '../screens/create_order_screen.dart';
 import '../screens/order_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/trade_screen.dart';
+import '../screens/recharge_screen.dart';
+import '../route_observer.dart';
 
 class HomeScreen extends StatefulWidget {
   final String accessToken;
@@ -15,17 +17,43 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, RouteAware {
   int _selectedIndex = 0;
   double _opacity = 0.0;
 
   @override
   void initState() {
     super.initState();
+    // Load profile (keeps previous behavior)
     Future.microtask(() {
       Provider.of<HomeModel>(context, listen: false).loadProfile(context);
+      // Ensure wallet is refreshed right after entering Home (e.g. just after login)
+      Provider.of<HomeModel>(context, listen: false).fetchWallet(context: context);
     });
     _runFadeIn();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final modalRoute = ModalRoute.of(context);
+    if (modalRoute != null) {
+      routeObserver.subscribe(this, modalRoute);
+    }
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  // Called when returning to this route (another route was popped)
+  @override
+  void didPopNext() {
+    // Refresh profile and wallet whenever user comes back to Home
+    Provider.of<HomeModel>(context, listen: false).loadProfile(context);
+    Provider.of<HomeModel>(context, listen: false).fetchWallet(context: context);
   }
 
   void _runFadeIn() {
@@ -48,12 +76,13 @@ class _HomeScreenState extends State<HomeScreen>
       if (index == 0) {
         _runFadeIn();
         Provider.of<HomeModel>(context, listen: false).loadProfile(context);
+        // Refresh wallet when user taps Home tab
+        Provider.of<HomeModel>(context, listen: false).fetchWallet(context: context);
       }
     });
   }
 
   Widget _buildBody(HomeModel model) {
-    // Chỉ hiện AppBar đặc biệt ở Home (index 0)
     if (_selectedIndex == 0) {
       return Column(
         children: [
@@ -62,25 +91,29 @@ class _HomeScreenState extends State<HomeScreen>
         ],
       );
     }
-    // Các tab khác giữ nguyên, không hiện AppBar đặc biệt
+
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 400),
       transitionBuilder: (Widget child, Animation<double> animation) {
         return FadeTransition(opacity: animation, child: child);
       },
       child: _selectedIndex == 1
-          ? const CreateOrderScreen()
+          ? RechargeScreen(accessToken: widget.accessToken) // màn hình nạp tiền
           : _selectedIndex == 2
-          ? const OrderScreen()
+          ? const CreateOrderScreen()
           : _selectedIndex == 3
+          ? const OrderScreen()
+          : _selectedIndex == 4
           ? TradeScreen(accessToken: widget.accessToken)
-          : (model.isLoading
+          : _selectedIndex == 5
+          ? (model.isLoading
           ? const Center(child: CircularProgressIndicator())
           : ProfileScreen(
         fullName: model.fullName ?? "Tên tài khoản",
         email: model.email ?? "N/A",
         phoneNumber: model.phoneNumber ?? "N/A",
-      )),
+      ))
+          : const SizedBox.shrink(),
     );
   }
 
@@ -130,7 +163,6 @@ class _HomeScreenState extends State<HomeScreen>
       ),
     );
   }
-
 
   Widget _buildWelcome() {
     return Center(
@@ -196,6 +228,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   List<Map<String, dynamic>> get _tabs => [
     {'icon': Icons.home, 'label': 'Trang chủ'},
+    {'icon': Icons.account_balance_wallet, 'label': 'Nạp tiền'},
     {'icon': Icons.add_circle, 'label': 'Tạo đơn'},
     {'icon': Icons.list_alt, 'label': 'Đơn hàng'},
     {'icon': Icons.receipt_long, 'label': 'Giao dịch'},

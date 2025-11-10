@@ -223,5 +223,135 @@ class ApiService {
     );
   }
 
+  /// API lấy danh sách đơn hàng cho nhà thầu
+  static Future<http.Response> getContractorOrders({required String accessToken}) async {
+    final url = Uri.parse('https://reekingly-noninduced-chanel.ngrok-free.app/api/contractorapi/orders');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+    return response;
+  }
+
+  /// (19) API thay đổi trạng thái đơn hàng
+  static Future<http.Response> changeOrderStatus({
+    required String accessToken,
+    required int orderId,
+    required int newStatus,
+  }) async {
+    final url = Uri.parse("$_orderBaseUrl/change-status");
+    final headers = {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer $accessToken",
+    };
+    final body = jsonEncode({
+      "orderId": orderId,
+      "newStatus": newStatus,
+    });
+    return await http.put(url, headers: headers, body: body);
+  }
+
+  /// (20) API cập nhật lại chi tiết đơn hàng
+  static Future<http.Response> updateOrderItems({
+    required String accessToken,
+    required int orderId,
+    required List<Map<String, dynamic>> orderItems,
+  }) async {
+    final url = Uri.parse("$_orderBaseUrl/update-order-item");
+    final headers = {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer $accessToken",
+    };
+    final body = jsonEncode({
+      "orderId": orderId,
+      "orderItems": orderItems,
+    });
+    return await http.post(url, headers: headers, body: body);
+  }
+  /// (21) Tạo đơn hàng dùng ví
+  static Future<http.Response> createOrderWithWallet({
+    required String accessToken,
+    required String senderName,
+    required String receiverName,
+    required String senderPhone,
+    required String receiverPhone,
+    required String senderAddress,
+    required String receiverAddress,
+    required int countryId,
+    required double downPayment,
+    required List<Map<String, dynamic>> orderItems,
+  }) async {
+    final url = Uri.parse("https://reekingly-noninduced-chanel.ngrok-free.app/api/orderapi/create-ver2");
+    final headers = {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer $accessToken",
+    };
+    final body = jsonEncode({
+      "senderName": senderName,
+      "receiverName": receiverName,
+      "senderPhone": senderPhone,
+      "receiverPhone": receiverPhone,
+      "senderAddress": senderAddress,
+      "receiverAddress": receiverAddress,
+      "countryId": countryId,
+      "downPayment": downPayment,
+      "orderItems": orderItems,
+    });
+
+    try {
+      final response = await http.post(url, headers: headers, body: body);
+      return response;
+    } catch (e) {
+      // Trả về lỗi 500 giả lập khi không gửi được request
+      return http.Response(jsonEncode({
+        "success": false,
+        "message": "Lỗi kết nối tới server: $e"
+      }), 500);
+    }
+  }
+
+  /// (22) Check nạp tiền vào ví thành công chưa
+  static Future<http.Response> checkDepositStatus({
+    required String accessToken,
+    required double amount,
+    required String content,
+  }) async {
+    final url = Uri.parse("$_paymentBaseUrl/check-banking");
+    final request = http.Request('GET', url)
+      ..headers['Content-Type'] = 'application/json'
+      ..headers['Authorization'] = 'Bearer $accessToken'
+      ..body = jsonEncode({
+        "amount": amount,
+        "content": content,
+      });
+    final streamedResponse = await request.send();
+    return await http.Response.fromStream(streamedResponse);
+  }
+
+  /// (23) Lấy số dư ví
+  static Future<http.Response> getWalletBalance({required String accessToken}) async {
+    final url = Uri.parse("$_paymentBaseUrl/wallet");
+    return await http.get(url, headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer $accessToken",
+    });
+  }
+
+  /// (24) Xác nhận hoàn tất thanh toán đơn hàng
+  static Future<http.Response> confirmOrderPayment({
+    required String accessToken,
+    required int orderId,
+  }) async {
+    final url = Uri.parse("$_orderBaseUrl/confirm-order/$orderId");
+    final headers = {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer $accessToken",
+    };
+    return await http.put(url, headers: headers, body: jsonEncode({}));
+  }
+
 
 }

@@ -70,17 +70,19 @@ class Order {
   }
 
   double get remainingVsDownPayment => (total - downPayment) > 0 ? (total - downPayment) : 0.0;
-  bool get canShowPayButton => status == 3 && total > downPayment;
+  bool get canShowPayButton => status == 3 && downPayment < total; // chỉ trạng thái 3, và tiền cọc < tổng
 
+  /// Danh sách trạng thái đúng theo bạn cung cấp
   String get statusText {
     switch (status) {
       case 1: return "Đang đến lấy hàng";
-      case 2: return "Đang trên đường lấy hàng";
-      case 3: return "Đã lấy hàng";
-      case 4: return "Chờ lên máy bay";
+      case 2: return "Đang trên đường đến kho trung chuyển";
+      case 3: return "Đã đến kho";
+      case 4: return "Chờ thanh toán";
       case 5: return "Chờ gửi hàng";
-      case 6: return "Đang gửi hàng";
+      case 6: return "Đang vận chuyển";
       case 7: return "Giao hàng thành công";
+      case 8: return "Huỷ";
       default: return "Không xác định";
     }
   }
@@ -96,6 +98,7 @@ class Order {
       case 6:
       case 7:
         return Colors.green;
+      case 8: return Colors.red;
       default:
         return Colors.grey;
     }
@@ -113,28 +116,31 @@ class Order {
         return Icons.local_shipping;
       case 7:
         return Icons.check_circle;
+      case 8: return  Icons.block_outlined;
       default:
         return Icons.help_outline;
     }
   }
 
+  // Gợi ý về trạng thái, chỉ cập nhật đúng mapping ý nghĩa:
   String? get statusNote {
     switch (status) {
       case 1: return "Đơn hàng đã được xác nhận";
-      case 2: return "Đơn hàng đã được lấy";
-      case 3: return "Đang xử lý đơn hàng tại kho";
-      case 4: return "Xác minh đơn hàng và chi phí";
-      case 5: return "Đơn hàng đang trên đường tới quốc gia xác nhận";
-      case 6: return "Đã tới quốc gia xác nhận và đang tới điểm nhận";
+      case 2: return "Đang trên đường đến kho trung chuyển";
+      case 3: return "Đã đến kho, vui lòng hoàn tất thanh toán nếu còn thiếu";
+      case 4: return "Chờ thanh toán, vui lòng kiểm tra và thanh toán";
+      case 5: return "Chờ gửi hàng";
+      case 6: return "Đang vận chuyển đến địa chỉ nhận";
       case 7: return null;
+      case 8: return "Đơn hàng đã bị huỷ";
       default: return null;
     }
   }
 
-  double get displayedDownPayment {
-    if (status == 1 || status == 2 || status == 5 || status == 6 || status == 7) {
-      return total;
-    }
-    return downPayment;
-  }
+      double get displayedDownPayment {
+        if (status == 1 || status == 2 || status == 5 || status == 6 || status == 7) {
+          return total;
+        }
+        return downPayment;
+      }
 }

@@ -83,30 +83,43 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     }
   }
 
-  // ====== Trạng thái (7 trạng thái mới) ======
   String _statusText(int? status) {
     switch (status) {
-      case 1: return "Đang đến lấy hàng";
-      case 2: return "Đang trên đường gửi hàng";
-      case 3: return "Đã lấy hàng";
-      case 4: return "Chờ lên máy bay";
-      case 5: return "Chờ gửi hàng";
-      case 6: return "Đang gửi hàng";
-      case 7: return "Giao hàng thành công";
-      default: return "Không xác định";
+      case 1:
+        return "Đang đến lấy hàng";
+      case 2:
+        return "Đang trên đường đến kho trung chuyển";
+      case 3:
+        return "Đã đến kho";
+      case 4:
+        return "Chờ thanh toán";
+      case 5:
+        return "Chờ gửi hàng";
+      case 6:
+        return "Đang vận chuyển";
+      case 7:
+        return "Giao hàng thành công";
+      default:
+        return "Không xác định";
     }
   }
 
   String? _statusNote(int? status) {
     switch (status) {
-      case 1: return "Đơn hàng đã được xác nhận";
-      case 2: return "Đơn hàng đã được lấy";
-      case 3: return "Đang xử lý đơn hàng tại kho";
-      case 4: return "Xác minh đơn hàng và chi phí";
-      case 5: return "Đơn hàng đang trên đường tới quốc gia xác nhận";
-      case 6: return "Đã tới quốc gia xác nhận và đang tới điểm nhận";
-      case 7: return null;
-      default: return null;
+      case 1:
+        return "Đơn hàng đã được xác nhận";
+      case 2:
+        return "Đang trên đường đến kho trung chuyển";
+      case 3:
+        return "Đã đến kho, vui lòng hoàn tất thanh toán nếu còn thiếu";
+      case 4:
+        return "Chờ thanh toán, vui lòng kiểm tra và thanh toán";
+      case 5:
+        return "Chờ gửi hàng";
+      case 6:
+        return "Đang vận chuyển đến địa chỉ nhận";
+      default:
+        return null;
     }
   }
 
@@ -143,8 +156,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     }
   }
 
-  // ====== Tính tiền theo items và top-level ======
-  double _toDouble(dynamic v) => (v is num) ? v.toDouble() : double.tryParse(v?.toString() ?? '') ?? 0.0;
+  double _toDouble(dynamic v) =>
+      (v is num) ? v.toDouble() : double.tryParse(v?.toString() ?? '') ?? 0.0;
 
   double _calcTotalFromItems(Map<String, dynamic> o) {
     final items = (o['items'] as List?) ?? [];
@@ -168,7 +181,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   double _readDownPayment(Map<String, dynamic> o) => _toDouble(o['downPayment']);
   double _readWalletUsed(Map<String, dynamic> o) => _toDouble(o['payWithBalance']);
 
-  String _fmtMoney(num v) => v.toStringAsFixed(0) + " đ";
+  String _fmtMoney(num v) => "${v.toStringAsFixed(0)} đ";
 
   void _showStatusNote(BuildContext context, int? status) {
     final note = _statusNote(status);
@@ -179,7 +192,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         title: Text(_statusText(status)),
         content: Text(note),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Đóng")),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Đóng")),
         ],
       ),
     );
@@ -252,11 +267,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header trạng thái
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: _getStatusColor(statusValue).withOpacity(0.15),
+                  backgroundColor:
+                  _getStatusColor(statusValue).withOpacity(0.15),
                   radius: 26,
                   child: Icon(
                     _getStatusIcon(statusValue),
@@ -286,50 +301,50 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    _statusText(statusValue),
-                    style: TextStyle(
-                      color: _getStatusColor(statusValue),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
+                  Flexible(
+                    child: Text(
+                      _statusText(statusValue),
+                      style: TextStyle(
+                        color: _getStatusColor(statusValue),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   if (_statusNote(statusValue) != null) ...[
                     const SizedBox(width: 6),
                     InkWell(
                       onTap: () => _showStatusNote(context, statusValue),
-                      child: Icon(Icons.info_outline, size: 18, color: _getStatusColor(statusValue)),
+                      child: Icon(Icons.info_outline,
+                          size: 18, color: _getStatusColor(statusValue)),
                     ),
                   ],
                 ],
               ),
             ),
             const SizedBox(height: 20),
-
-            // Người gửi
             _buildSection("Người gửi", [
               _buildRow("Họ tên", o["senderName"]?.toString() ?? ""),
               _buildRow("SĐT", o["senderPhone"]?.toString() ?? ""),
               _buildRow("Địa chỉ", o["senderAddress"]?.toString() ?? ""),
             ]),
             const SizedBox(height: 16),
-
-            // Người nhận
             _buildSection("Người nhận", [
               _buildRow("Họ tên", o["receiverName"]?.toString() ?? ""),
               _buildRow("SĐT", o["receiverPhone"]?.toString() ?? ""),
               _buildRow("Địa chỉ", o["receiverAddress"]?.toString() ?? ""),
             ]),
             const SizedBox(height: 16),
-
-            // Mặt hàng
             _buildItemsSection(o),
             const SizedBox(height: 12),
-
-            // Tiền cọc / ví / tổng
-            _buildRow("Tiền cọc (QR)", _fmtMoney(downPayment), valueColor: Colors.orange),
-            if (walletUsed > 0) _buildRow("Sử dụng ví", _fmtMoney(walletUsed), valueColor: Colors.orange),
-            _buildRow("Tổng tiền", _fmtMoney(total), valueColor: Colors.green, bold: true),
+            _buildRow("Tiền cọc (QR)", _fmtMoney(downPayment),
+                valueColor: Colors.orange),
+            if (walletUsed > 0)
+              _buildRow("Sử dụng ví", _fmtMoney(walletUsed),
+                  valueColor: Colors.orange),
+            _buildRow("Tổng tiền", _fmtMoney(total),
+                valueColor: Colors.green, bold: true),
           ],
         ),
       ),
@@ -338,9 +353,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
   Widget _buildItemsSection(Map<String, dynamic> o) {
     final items = (o['items'] as List?) ?? [];
-    if (items.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    if (items.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -355,18 +368,46 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           final weightReal = _toDouble(it['weightReal']);
           final weightEstimate = _toDouble(it['weightEstimate']);
           final weight = weightReal > 0 ? weightReal : weightEstimate;
-          final amount = (it['amount'] is num) ? (it['amount'] as num).toDouble() : price * weight;
+          final amount = (it['amount'] is num)
+              ? (it['amount'] as num).toDouble()
+              : price * weight;
 
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 2),
             child: Row(
               children: [
-                Expanded(child: Text(name)),
-                Text("[${weight.toStringAsFixed(2)} $unit]"),
+                Expanded(
+                  flex: 3,
+                  child: Text(
+                    name,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Flexible(
+                  flex: 2,
+                  child: Text(
+                    "[${weight.toStringAsFixed(2)} $unit]",
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
                 const SizedBox(width: 8),
-                Text("${price.toStringAsFixed(0)} đ/$unit", style: const TextStyle(color: Colors.green)),
+                Flexible(
+                  flex: 2,
+                  child: Text(
+                    "${price.toStringAsFixed(0)} đ/$unit",
+                    style: const TextStyle(color: Colors.green),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
                 const SizedBox(width: 8),
-                Text(_fmtMoney(amount), style: const TextStyle(fontWeight: FontWeight.bold)),
+                Flexible(
+                  flex: 2,
+                  child: Text(
+                    _fmtMoney(amount),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ],
             ),
           );
@@ -382,10 +423,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         Text(
           title,
           style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 15,
-            color: Colors.blue,
-          ),
+              fontWeight: FontWeight.bold, fontSize: 15, color: Colors.blue),
         ),
         const SizedBox(height: 6),
         ...children,
@@ -393,15 +431,15 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
   }
 
-  Widget _buildRow(String label, String value, {Color? valueColor, bool bold = false}) {
+  Widget _buildRow(String label, String value,
+      {Color? valueColor, bool bold = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          Text(
-            "$label: ",
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-          ),
+          Text("$label: ",
+              style:
+              const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
           Expanded(
             child: Text(
               value,
@@ -410,6 +448,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 fontWeight: bold ? FontWeight.bold : FontWeight.normal,
                 color: valueColor ?? Colors.black87,
               ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],

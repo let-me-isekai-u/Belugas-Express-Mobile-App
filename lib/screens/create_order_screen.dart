@@ -32,9 +32,6 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
 
   List<OrderItemModel> orderItems = [];
 
-  bool useWallet = false;
-  double walletBalance = 0.0;
-
   String? accessToken;
   int? userId;
 
@@ -43,7 +40,6 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     super.initState();
     _resolveAccessToken();
     _fetchCountries();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _getWalletFromProfile());
   }
 
   Future<void> _resolveAccessToken() async {
@@ -51,9 +47,6 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     accessToken = widget.accessToken ?? prefs.getString('accessToken') ?? '';
     userId = prefs.getInt('id');
     setState(() {});
-    if (accessToken != null && accessToken!.isNotEmpty) {
-      await _getWalletFromProfile();
-    }
   }
 
   Future<void> _fetchCountries() async {
@@ -94,16 +87,6 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     setState(() => isLoadingPricing = false);
   }
 
-  Future<void> _getWalletFromProfile() async {
-    if (accessToken == null || accessToken!.isEmpty) return;
-    final res = await ApiService.getProfile(accessToken: accessToken!);
-    if (res.statusCode == 200) {
-      final parsed = jsonDecode(res.body);
-      walletBalance = (parsed['wallet'] is num) ? (parsed['wallet'] as num).toDouble() : 0.0;
-      setState(() {});
-    }
-  }
-
   String countryCodeToEmoji(String countryCode) {
     return countryCode.toUpperCase().codeUnits
         .map((c) => String.fromCharCode(0x1F1E6 - 65 + c))
@@ -114,14 +97,6 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     double total = 0;
     for (final item in orderItems) {
       total += item.weightEstimate * item.price;
-    }
-    return total;
-  }
-
-  double getDownPayment() {
-    double total = getTotalOrderAmount();
-    if (useWallet) {
-      return (total - walletBalance).clamp(0, total);
     }
     return total;
   }
@@ -282,6 +257,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
       _showSnackBar("Đơn hàng phải có ít nhất một mặt hàng!", Colors.red);
       return;
     }
+
     final model = CreateOrderModel(
       senderName: senderNameController.text.trim(),
       senderPhone: senderPhoneController.text.trim(),
@@ -290,10 +266,25 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
       receiverPhone: receiverPhoneController.text.trim(),
       receiverAddress: receiverAddressController.text.trim(),
       countryId: selectedCountryId!,
-      payWithBalance: useWallet ? walletBalance : 0,
-      downPayment: getDownPayment(),
+      payWithBalance: 0,
+      downPayment: getTotalOrderAmount(),
       orderItems: orderItems,
     );
+
+    // 🔹 Gọi API 23 trước khi sang confirm screen
+    double walletBalance = 0;
+    try {
+      final res = await ApiService.getWalletBalance(accessToken: accessToken ?? '');
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body);
+        walletBalance = (body['wallet'] as num).toDouble();
+      } else {
+        _showSnackBar("Lỗi khi lấy số dư ví: ${res.statusCode}", Colors.red);
+      }
+    } catch (e) {
+      _showSnackBar("Lỗi kết nối khi lấy số dư ví: $e", Colors.red);
+    }
+
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => ConfirmOrderScreen(
@@ -389,8 +380,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                       onChanged: (v) {
                         setState(() {
                           selectedCountryId = v;
-                          selectedCountryCode =
-                          countryList.firstWhere((e) => e['id'] == v)['code'];
+                          selectedCountryCode = countryList.firstWhere((e) => e['id'] == v)['code'];
                           orderItems.clear();
                         });
                         _fetchPricingTable(v!);
@@ -431,40 +421,6 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                       label: const Text("Thêm mặt hàng"),
                     ),
                   )
-                ]),
-                _buildSection(title: "Thanh toán", children: [
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: useWallet,
-                        onChanged: (v) async {
-                          setState(() => useWallet = v ?? false);
-                          if (v == true) {
-                            await _getWalletFromProfile();
-                          }
-                        },
-                      ),
-                      const Text("Sử dụng ví thanh toán"),
-                      const SizedBox(width: 10),
-                      if (useWallet)
-                        Expanded(
-                          child: Text(
-                            "Số dư ví: ${walletBalance.toStringAsFixed(0)}đ",
-                            style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        ),
-                    ],
-                  ),
-                  Text(
-                    "Tổng tiền đơn hàng: ${getTotalOrderAmount().toStringAsFixed(0)}đ",
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 16),
-                  ),
-                  Text(
-                    "Tiền cần chuyển khoản: ${getDownPayment().toStringAsFixed(0)}đ",
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red, fontSize: 16),
-                  ),
                 ]),
                 const SizedBox(height: 18),
                 SizedBox(
