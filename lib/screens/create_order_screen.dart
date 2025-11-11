@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/create_order_model.dart';
 import '../services/api_service.dart';
 import 'confirm_order_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class CreateOrderScreen extends StatefulWidget {
   final String? accessToken;
@@ -126,7 +127,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     );
   }
 
-  Widget _buildOrderItem(int index) {
+  Widget _buildOrderItem(int index, AppLocalizations loc) {
     final item = orderItems[index];
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6),
@@ -140,10 +141,10 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
               flex: 3,
               child: DropdownButtonFormField<int>(
                 isExpanded: true,
-                decoration: const InputDecoration(
-                  labelText: "Loại hàng",
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                decoration: InputDecoration(
+                  labelText: loc.createOrderItemType,
+                  border: const OutlineInputBorder(),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 ),
                 value: item.pricingTableId,
                 items: pricingTable
@@ -174,7 +175,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
               child: TextFormField(
                 initialValue: item.weightEstimate > 0 ? item.weightEstimate.toString() : "",
                 decoration: InputDecoration(
-                  labelText: item.unit == "kg" ? "Kg" : item.unit,
+                  labelText: loc.createOrderItemWeight(item.unit),
                   border: const OutlineInputBorder(),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 ),
@@ -185,7 +186,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                 },
                 validator: (v) {
                   final val = double.tryParse(v ?? "");
-                  if (val == null || val <= 0) return "Nhập số lượng hợp lệ";
+                  if (val == null || val <= 0) return loc.createOrderErrorInvalidWeight;
                   return null;
                 },
               ),
@@ -207,7 +208,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                       setState(() => orderItems.removeAt(index));
                     }
                         : null,
-                    tooltip: "Xoá mặt hàng",
+                    tooltip: loc.createOrderItemRemove,
                   ),
                 ],
               ),
@@ -240,21 +241,21 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     );
   }
 
-  void _onConfirmOrder() async {
+  void _onConfirmOrder(AppLocalizations loc) async {
     if (!_formKey.currentState!.validate()) {
-      _showSnackBar("Vui lòng kiểm tra lại thông tin!", Colors.red);
+      _showSnackBar(loc.createOrderErrorEmptyField, Colors.red);
       return;
     }
     if (selectedCountryId == null) {
-      _showSnackBar("Vui lòng chọn quốc gia!", Colors.red);
+      _showSnackBar(loc.createOrderErrorCountry, Colors.red);
       return;
     }
     if (orderItems.any((e) => e.weightEstimate <= 0)) {
-      _showSnackBar("Vui lòng nhập số lượng hợp lệ cho mỗi mặt hàng!", Colors.red);
+      _showSnackBar(loc.createOrderErrorInvalidWeight, Colors.red);
       return;
     }
     if (orderItems.isEmpty) {
-      _showSnackBar("Đơn hàng phải có ít nhất một mặt hàng!", Colors.red);
+      _showSnackBar(loc.createOrderErrorNoItems, Colors.red);
       return;
     }
 
@@ -279,10 +280,10 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
         final body = jsonDecode(res.body);
         walletBalance = (body['wallet'] as num).toDouble();
       } else {
-        _showSnackBar("Lỗi khi lấy số dư ví: ${res.statusCode}", Colors.red);
+        _showSnackBar(loc.createOrderErrorWalletFetch("${res.statusCode}"), Colors.red);
       }
     } catch (e) {
-      _showSnackBar("Lỗi kết nối khi lấy số dư ví: $e", Colors.red);
+      _showSnackBar(loc.createOrderErrorWalletFetch("$e"), Colors.red);
     }
 
     Navigator.of(context).push(
@@ -299,11 +300,13 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         backgroundColor: Colors.blue[400],
-        title: const Text("Tạo đơn hàng", style: TextStyle(color: Colors.white)),
+        title: Text(loc.createOrderTitle, style: const TextStyle(color: Colors.white)),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -313,40 +316,40 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
             key: _formKey,
             child: Column(
               children: [
-                _buildSection(title: "Thông tin người gửi", children: [
+                _buildSection(title: loc.createOrderSenderSection, children: [
                   _buildTextField(
                     controller: senderPhoneController,
-                    label: "Số điện thoại người gửi",
+                    label: loc.createOrderSenderPhone,
                     icon: Icons.phone,
                     inputType: TextInputType.phone,
-                    validator: (v) => (v == null || v.trim().isEmpty) ? "Vui lòng nhập số điện thoại" : null,
+                    validator: (v) => (v == null || v.trim().isEmpty) ? loc.createOrderErrorEmptyField : null,
                   ),
                   _buildTextField(
                     controller: senderNameController,
-                    label: "Họ tên người gửi",
+                    label: loc.createOrderSenderName,
                     icon: Icons.person,
-                    validator: (v) => (v == null || v.trim().isEmpty) ? "Vui lòng nhập họ tên" : null,
+                    validator: (v) => (v == null || v.trim().isEmpty) ? loc.createOrderErrorEmptyField : null,
                   ),
                   _buildTextField(
                     controller: senderAddressController,
-                    label: "Địa chỉ lấy hàng",
+                    label: loc.createOrderSenderAddress,
                     icon: Icons.location_on,
-                    validator: (v) => (v == null || v.trim().isEmpty) ? "Vui lòng nhập địa chỉ" : null,
+                    validator: (v) => (v == null || v.trim().isEmpty) ? loc.createOrderErrorEmptyField : null,
                   ),
                 ]),
-                _buildSection(title: "Thông tin người nhận", children: [
+                _buildSection(title: loc.createOrderReceiverSection, children: [
                   _buildTextField(
                     controller: receiverPhoneController,
-                    label: "Số điện thoại người nhận",
+                    label: loc.createOrderReceiverPhone,
                     icon: Icons.phone_android,
                     inputType: TextInputType.phone,
-                    validator: (v) => (v == null || v.trim().isEmpty) ? "Vui lòng nhập số điện thoại" : null,
+                    validator: (v) => (v == null || v.trim().isEmpty) ? loc.createOrderErrorEmptyField : null,
                   ),
                   _buildTextField(
                     controller: receiverNameController,
-                    label: "Họ tên người nhận",
+                    label: loc.createOrderReceiverName,
                     icon: Icons.person_outline,
-                    validator: (v) => (v == null || v.trim().isEmpty) ? "Vui lòng nhập họ tên" : null,
+                    validator: (v) => (v == null || v.trim().isEmpty) ? loc.createOrderErrorEmptyField : null,
                   ),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
@@ -358,7 +361,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                         prefixIcon: selectedCountryCode != null
                             ? Text(countryCodeToEmoji(selectedCountryCode!), style: const TextStyle(fontSize: 20))
                             : const Icon(Icons.flag, color: Colors.blue),
-                        labelText: "Quốc gia nhận",
+                        labelText: loc.createOrderReceiverCountry,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                       ),
                       value: selectedCountryId,
@@ -385,21 +388,21 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                         });
                         _fetchPricingTable(v!);
                       },
-                      validator: (v) => (v == null) ? "Vui lòng chọn quốc gia" : null,
+                      validator: (v) => (v == null) ? loc.createOrderErrorCountry : null,
                     ),
                   ),
                   _buildTextField(
                     controller: receiverAddressController,
-                    label: "Địa chỉ người nhận",
+                    label: loc.createOrderReceiverAddress,
                     icon: Icons.home,
-                    validator: (v) => (v == null || v.trim().isEmpty) ? "Vui lòng nhập địa chỉ" : null,
+                    validator: (v) => (v == null || v.trim().isEmpty) ? loc.createOrderErrorEmptyField : null,
                   ),
                 ]),
-                _buildSection(title: "Thông tin mặt hàng", children: [
+                _buildSection(title: loc.createOrderItemsSection, children: [
                   if (isLoadingPricing)
                     const Center(child: CircularProgressIndicator())
                   else
-                    ...orderItems.asMap().entries.map((e) => _buildOrderItem(e.key)),
+                    ...orderItems.asMap().entries.map((e) => _buildOrderItem(e.key, loc)),
                   const SizedBox(height: 6),
                   SizedBox(
                     width: double.infinity,
@@ -418,7 +421,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                       }
                           : null,
                       icon: const Icon(Icons.add_box, color: Colors.blue),
-                      label: const Text("Thêm mặt hàng"),
+                      label: Text(loc.createOrderAddItem),
                     ),
                   )
                 ]),
@@ -426,9 +429,9 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: _onConfirmOrder,
+                    onPressed: () => _onConfirmOrder(loc),
                     icon: const Icon(Icons.check, color: Colors.white),
-                    label: const Text("Xác nhận đơn hàng", style: TextStyle(fontSize: 18)),
+                    label: Text(loc.createOrderConfirmButton, style: const TextStyle(fontSize: 18)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue[500],
                       padding: const EdgeInsets.symmetric(vertical: 14),

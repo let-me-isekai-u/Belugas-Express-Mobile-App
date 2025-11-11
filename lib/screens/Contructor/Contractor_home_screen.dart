@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:begulas_express/models/home_model.dart';
 import '../profile_screen.dart';
 import 'package:begulas_express/screens/Contructor/order_status_screen.dart';
+import '../../l10n/app_localizations.dart';
 
 class ContractorHomeScreen extends StatefulWidget {
-  const ContractorHomeScreen({Key? key}) : super(key: key);
+  final Function(Locale) onLocaleChange;
+
+  const ContractorHomeScreen({super.key, required this.onLocaleChange});
+
 
   @override
   State<ContractorHomeScreen> createState() => _ContractorHomeScreenState();
@@ -43,13 +46,13 @@ class _ContractorHomeScreenState extends State<ContractorHomeScreen>
     });
   }
 
-  Widget _buildBody(HomeModel model) {
+  Widget _buildBody(HomeModel model, AppLocalizations loc) {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 400),
       transitionBuilder: (child, anim) =>
           FadeTransition(opacity: anim, child: child),
       child: _selectedIndex == 0
-          ? _buildWelcome()
+          ? _buildWelcome(loc)
           : _selectedIndex == 1
           ? OrderStatusScreen(
         tabBarBack: () {
@@ -62,14 +65,15 @@ class _ContractorHomeScreenState extends State<ContractorHomeScreen>
           : (model.isLoading
           ? const Center(child: CircularProgressIndicator())
           : ProfileScreen(
-        fullName: model.fullName ?? "Tên tài khoản",
+        fullName: model.fullName ?? loc.defaultUserName,
         email: model.email ?? "N/A",
         phoneNumber: model.phoneNumber ?? "N/A",
+        onLocaleChange: widget.onLocaleChange,
       )),
     );
   }
 
-  Widget _buildWelcome() {
+  Widget _buildWelcome(AppLocalizations loc) {
     return Center(
       key: const ValueKey('welcome'),
       child: AnimatedOpacity(
@@ -79,7 +83,7 @@ class _ContractorHomeScreenState extends State<ContractorHomeScreen>
           padding: const EdgeInsets.all(24),
           margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.95),
+            color: Colors.white.withOpacity(0.95),
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
@@ -95,7 +99,7 @@ class _ContractorHomeScreenState extends State<ContractorHomeScreen>
               Icon(Icons.flight_takeoff, size: 70, color: Colors.blue[400]),
               const SizedBox(height: 20),
               Text(
-                "Welcome to Beluga Express!",
+                loc.contractorHomeWelcomeTitle,
                 style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -103,7 +107,7 @@ class _ContractorHomeScreenState extends State<ContractorHomeScreen>
               ),
               const SizedBox(height: 10),
               Text(
-                "Lựa chọn và cập nhật trạng thái đơn hàng khả dụng.",
+                loc.contractorHomeWelcomeMessage,
                 style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                 textAlign: TextAlign.center,
               ),
@@ -121,9 +125,9 @@ class _ContractorHomeScreenState extends State<ContractorHomeScreen>
                   setState(() => _selectedIndex = 1);
                 },
                 icon: const Icon(Icons.assignment),
-                label: const Text(
-                  "Xem đơn khả dụng",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                label: Text(
+                  loc.contractorHomeViewOrdersButton,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -133,14 +137,16 @@ class _ContractorHomeScreenState extends State<ContractorHomeScreen>
     );
   }
 
-  final List<Map<String, dynamic>> _tabs = const [
-    {'icon': Icons.home, 'label': 'Trang chủ'},
-    {'icon': Icons.assignment, 'label': 'Đơn hàng'},
-    {'icon': Icons.person, 'label': 'Tài khoản'},
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
+    final tabs = [
+      {'icon': Icons.home, 'label': loc.contractorHomeTabHome},
+      {'icon': Icons.assignment, 'label': loc.contractorHomeTabOrders},
+      {'icon': Icons.person, 'label': loc.contractorHomeTabProfile},
+    ];
+
     return Consumer<HomeModel>(
       builder: (context, model, _) {
         return Container(
@@ -157,13 +163,13 @@ class _ContractorHomeScreenState extends State<ContractorHomeScreen>
               elevation: 0,
               backgroundColor: Colors.blue[400],
               automaticallyImplyLeading: false,
-              title: const Text(
-                "Begulas Express",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              title: Text(
+                loc.contractorHomeAppBarTitle,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
               ),
               centerTitle: true,
             ),
-            body: _buildBody(model),
+            body: _buildBody(model, loc),
             bottomNavigationBar: Container(
               decoration: BoxDecoration(
                 color: Colors.blue[400],
@@ -191,10 +197,10 @@ class _ContractorHomeScreenState extends State<ContractorHomeScreen>
                     fontWeight: FontWeight.bold, fontSize: 14),
                 unselectedLabelStyle: const TextStyle(
                     fontWeight: FontWeight.w400, fontSize: 13),
-                items: _tabs
+                items: tabs
                     .map((tab) => BottomNavigationBarItem(
-                  icon: Icon(tab['icon']),
-                  label: tab['label'],
+                  icon: Icon(tab['icon'] as IconData),
+                  label: tab['label'].toString(),
                 ))
                     .toList(),
               ),

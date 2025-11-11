@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
+import '../l10n/app_localizations.dart';
 
 class RechargeScreen extends StatefulWidget {
   final String accessToken;
@@ -46,12 +47,13 @@ class _RechargeScreenState extends State<RechargeScreen> {
   }
 
   Future<void> _startRecharge(double amount) async {
+    final loc = AppLocalizations.of(context)!;
     if (amount < 50000) {
-      _showSnackBar("Số tiền nạp tối thiểu là 50.000 VND", Colors.red);
+      _showSnackBar(loc.rechargeMinAmountError, Colors.red);
       return;
     }
     if (userId == null || userId == 0) {
-      _showSnackBar("Không lấy được ID người dùng.", Colors.red);
+      _showSnackBar(loc.rechargeUserIdError, Colors.red);
       return;
     }
 
@@ -80,9 +82,9 @@ class _RechargeScreenState extends State<RechargeScreen> {
         if (!mounted) return;
         setState(() {
           showQR = false;
-          paymentStatus = "⛔ Hết thời gian thanh toán.";
+          paymentStatus = loc.rechargeTimeout;
         });
-        _showSnackBar("⛔ Hết thời gian thanh toán!", Colors.red);
+        _showSnackBar(loc.rechargeTimeout, Colors.red);
       }
     });
 
@@ -107,10 +109,10 @@ class _RechargeScreenState extends State<RechargeScreen> {
               t.cancel();
               if (!mounted) return;
               setState(() {
-                paymentStatus = "✅ Nạp tiền thành công!";
+                paymentStatus = loc.rechargeSuccess;
                 showQR = false;
               });
-              _showSnackBar("✅ Nạp tiền thành công!", Colors.green);
+              _showSnackBar(loc.rechargeSuccess, Colors.green);
             }
           } catch (e) {
             debugPrint("❌ Lỗi parse JSON: $e");
@@ -124,24 +126,26 @@ class _RechargeScreenState extends State<RechargeScreen> {
     });
   }
 
-  Widget _buildAmountInput() {
+  Widget _buildAmountInput(AppLocalizations loc) {
     return TextFormField(
       controller: amountController,
       keyboardType: TextInputType.number,
       decoration: InputDecoration(
-        labelText: "Nhập số tiền nạp",
+        labelText: loc.rechargeAmountHint,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         prefixIcon: const Icon(Icons.monetization_on, color: Colors.blue),
       ),
       validator: (v) {
         final val = double.tryParse(v ?? "");
-        if (val == null || val <= 0) return "Nhập số tiền hợp lệ";
+        if (val == null || val <= 0) return loc.rechargeAmountHint;
         return null;
       },
     );
   }
 
-  Widget _buildQRDialog() {
+  Widget _buildQRDialog(AppLocalizations loc) {
+    final minutes = countdown ~/ 60;
+    final seconds = (countdown % 60).toString().padLeft(2, '0');
     return Dialog(
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -150,17 +154,17 @@ class _RechargeScreenState extends State<RechargeScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text("Quét mã QR để chuyển khoản", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.blue)),
+            Text(loc.rechargeQRCodeTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.blue)),
             const SizedBox(height: 16),
             Image.network(qrUrl, height: 280, width: 280, fit: BoxFit.contain),
             const SizedBox(height: 10),
-            Text("Số tiền: ${rechargeAmount?.toStringAsFixed(0)} VND", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            Text("Nội dung: $qrDescription", style: const TextStyle(color: Colors.orange, fontSize: 16)),
+            Text(loc.rechargeQRCodeAmount(rechargeAmount?.toStringAsFixed(0) ?? "0"), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(loc.rechargeQRCodeContent(qrDescription), style: const TextStyle(color: Colors.orange, fontSize: 16)),
             const SizedBox(height: 10),
-            Text("Thời gian còn lại: ${countdown ~/ 60}:${(countdown % 60).toString().padLeft(2, '0')}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.red)),
+            Text(loc.rechargeQRCodeCountdown(minutes, seconds), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.red)),
             const SizedBox(height: 8),
             if (paymentStatus.isNotEmpty)
-              Text(paymentStatus, style: TextStyle(color: paymentStatus.contains("thành công") ? Colors.green : Colors.red, fontWeight: FontWeight.bold, fontSize: 15)),
+              Text(paymentStatus, style: TextStyle(color: paymentStatus.contains("thành công") || paymentStatus.contains("successful") ? Colors.green : Colors.red, fontWeight: FontWeight.bold, fontSize: 15)),
             const SizedBox(height: 10),
             TextButton.icon(
               onPressed: () {
@@ -173,7 +177,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
                 });
               },
               icon: const Icon(Icons.close, color: Colors.red),
-              label: const Text("Đóng mã QR", style: TextStyle(color: Colors.red)),
+              label: Text(loc.rechargeQRCodeCloseButton, style: const TextStyle(color: Colors.red)),
             ),
           ],
         ),
@@ -191,11 +195,12 @@ class _RechargeScreenState extends State<RechargeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         backgroundColor: Colors.blue[400],
-        title: const Text("Nạp tiền vào ví", style: TextStyle(color: Colors.white)),
+        title: Text(loc.rechargeTitle, style: const TextStyle(color: Colors.white)),
         centerTitle: true,
       ),
       body: Stack(
@@ -208,7 +213,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 20),
-                    _buildAmountInput(),
+                    _buildAmountInput(loc),
                     const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
@@ -226,7 +231,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
-                        child: const Text("Xác nhận nạp tiền", style: TextStyle(fontSize: 18, color: Colors.white)),
+                        child: Text(loc.rechargeTitle, style: const TextStyle(fontSize: 18, color: Colors.white)),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -236,7 +241,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
               ),
             ),
           ),
-          if (showQR) Center(child: _buildQRDialog()),
+          if (showQR) Center(child: _buildQRDialog(loc)),
         ],
       ),
     );

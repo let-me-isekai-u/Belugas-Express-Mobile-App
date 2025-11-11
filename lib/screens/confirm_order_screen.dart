@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/create_order_model.dart';
 import '../services/api_service.dart';
 import 'order_detail_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class ConfirmOrderScreen extends StatefulWidget {
   final CreateOrderModel orderModel;
@@ -33,6 +34,7 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
   }
 
   Future<void> _fetchWalletBalance() async {
+    final loc = AppLocalizations.of(context)!;
     try {
       final res = await ApiService.getWalletBalance(accessToken: widget.accessToken);
       if (res.statusCode == 200) {
@@ -40,19 +42,23 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
         if (data["success"] == true) {
           setState(() => _walletBalance = (data["wallet"] as num).toDouble());
         } else {
-          _showDialog("Không thể lấy số dư ví.");
+          _showDialog(loc.confirmOrderDialogFetchError, title: loc.confirmOrderDialogTitle);
         }
       } else {
-        _showDialog("Lỗi khi kiểm tra ví: ${res.statusCode}");
+        _showDialog(loc.changePasswordConnectionError("${res.statusCode}"), title: loc.confirmOrderDialogTitle);
       }
     } catch (e) {
-      _showDialog("Đã xảy ra lỗi: $e");
+      _showDialog(loc.changePasswordConnectionError("$e"), title: loc.confirmOrderDialogTitle);
     }
   }
 
   Future<void> _confirmOrder() async {
+    final loc = AppLocalizations.of(context)!;
     if (_walletBalance < 500000) {
-      _showDialog("Số dư ví không đủ để tạo đơn hàng. Vui lòng nạp thêm.");
+      _showDialog(
+        loc.confirmOrderDialogInsufficientWallet,
+        title: loc.confirmOrderDialogTitle,
+      );
       return;
     }
 
@@ -75,7 +81,8 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
         final data = jsonDecode(res.body);
         if (data["success"] == true) {
           _showDialog(
-            "Tạo đơn hàng thành công! Mã đơn: ${data["orderCode"]}",
+            loc.confirmOrderDialogCreateSuccess(data["orderCode"] ?? ""),
+            title: loc.confirmOrderDialogTitle,
             onConfirm: () {
               Navigator.pushReplacement(
                 context,
@@ -86,27 +93,39 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
             },
           );
         } else {
-          _showDialog(data["message"] ?? "Tạo đơn thất bại!");
+          _showDialog(
+            data["message"] ?? loc.confirmOrderDialogCreateFailed,
+            title: loc.confirmOrderDialogTitle,
+          );
         }
       } else if (res.statusCode == 111) {
-        _showDialog("Số dư ví không đủ để tạo đơn hàng.");
+        _showDialog(
+          loc.confirmOrderDialogInsufficientWallet,
+          title: loc.confirmOrderDialogTitle,
+        );
       } else if (res.statusCode == 401) {
-        _showDialog("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
+        _showDialog(
+          loc.confirmOrderDialogSessionExpired,
+          title: loc.confirmOrderDialogTitle,
+        );
       } else {
-        _showDialog("Lỗi không xác định. Mã lỗi: ${res.statusCode}");
+        _showDialog(
+          loc.confirmOrderDialogUnknownError("${res.statusCode}"),
+          title: loc.confirmOrderDialogTitle,
+        );
       }
     } catch (e) {
-      _showDialog("Đã xảy ra lỗi: $e");
+      _showDialog(loc.changePasswordConnectionError("$e"), title: loc.confirmOrderDialogTitle);
     } finally {
       setState(() => _isLoading = false);
     }
   }
 
-  void _showDialog(String message, {VoidCallback? onConfirm}) {
+  void _showDialog(String message, {VoidCallback? onConfirm, String? title}) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text("Thông báo"),
+        title: Text(title ?? "Order"),
         content: Text(message),
         actions: [
           TextButton(
@@ -124,10 +143,11 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
   @override
   Widget build(BuildContext context) {
     final order = widget.orderModel;
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Xác nhận đơn hàng"),
+        title: Text(loc.confirmOrderTitle),
         backgroundColor: Colors.blueAccent,
         centerTitle: true,
       ),
@@ -141,31 +161,31 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Thông tin người gửi",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                Text("Tên: ${order.senderName}"),
-                Text("SĐT: ${order.senderPhone}"),
-                Text("Địa chỉ: ${order.senderAddress}"),
+                Text(loc.confirmOrderSenderSection,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text("${loc.createOrderSenderName}: ${order.senderName}"),
+                Text("${loc.createOrderSenderPhone}: ${order.senderPhone}"),
+                Text("${loc.createOrderSenderAddress}: ${order.senderAddress}"),
                 const SizedBox(height: 10),
-                const Text("Thông tin người nhận",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                Text("Tên: ${order.receiverName}"),
-                Text("SĐT: ${order.receiverPhone}"),
-                Text("Địa chỉ: ${order.receiverAddress}"),
+                Text(loc.confirmOrderReceiverSection,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text("${loc.createOrderReceiverName}: ${order.receiverName}"),
+                Text("${loc.createOrderReceiverPhone}: ${order.receiverPhone}"),
+                Text("${loc.createOrderReceiverAddress}: ${order.receiverAddress}"),
                 const SizedBox(height: 10),
-                const Text("Chi tiết hàng hoá",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(loc.confirmOrderItemsSection,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 ...order.orderItems.map(
                       (item) => ListTile(
                     title: Text(item.name),
-                    subtitle: Text("Khối lượng: ${item.weightEstimate} ${item.unit}"),
+                    subtitle: Text("${loc.createOrderItemWeight(item.unit)}: ${item.weightEstimate}"),
                     trailing: Text("${item.price.toStringAsFixed(0)}đ/${item.unit}"),
                   ),
                 ),
                 const Divider(),
                 const SizedBox(height: 10),
                 Text(
-                  "Số dư ví hiện tại: ${_walletBalance.toStringAsFixed(0)} VND",
+                  loc.confirmOrderWalletBalance(_walletBalance.toStringAsFixed(0)),
                   style: const TextStyle(
                       fontWeight: FontWeight.bold, color: Colors.green, fontSize: 16),
                 ),
@@ -179,9 +199,9 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                     ),
                     icon: const Icon(Icons.wallet, color: Colors.white),
-                    label: const Text(
-                      "Xác nhận đặt cọc 500.000 VND",
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    label: Text(
+                      loc.confirmOrderDepositButton,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                     onPressed: _confirmOrder,
                   ),

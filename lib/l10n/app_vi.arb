@@ -1,0 +1,370 @@
+{
+  "@@locale": "vi",
+  "appTitle": "Beluga Express",
+  "phone": "Số điện thoại",
+  "password": "Mật khẩu",
+  "login": "Đăng nhập",
+  "forgotPassword": "Quên mật khẩu",
+  "register": "Đăng ký",
+  "loginErrorEmpty": "Vui lòng nhập đầy đủ Số điện thoại và Mật khẩu",
+  "loginSuccess": "Đăng nhập thành công",
+  "loginErrorWrong": "Sai số điện thoại hoặc Mật khẩu",
+  "loginErrorLocked": "Tài khoản đã bị khóa, không thể đăng nhập",
+  "loginErrorOther": "Có lỗi xảy ra, vui lòng thử lại",
+  "registerTitle": "Beluga Express",
+  "nameHint": "Tên",
+  "emailHint": "Email",
+  "passwordHint": "Mật khẩu",
+  "confirmPasswordHint": "Xác nhận mật khẩu",
+  "phoneHint": "Số điện thoại",
+  "verificationCodeHint": "Mã xác nhận",
+  "sendCode": "Nhận mã",
+  "resendCode": "Gửi lại ({count})",
+  "referralCodeHint": "Mã giới thiệu",
+  "zaloHint": "Số Zalo (tùy chọn)",
+  "agreeTerms": "Tôi đồng ý với ",
+  "termsOfUse": "Điều khoản sử dụng",
+  "registerButton": "Đăng ký",
+  "alreadyAccount": "Đã có tài khoản? Đăng nhập",
+  "enterName": "Vui lòng nhập tên",
+  "enterEmail": "Vui lòng nhập email",
+  "invalidEmail": "Email không hợp lệ",
+  "enterPassword": "Vui lòng nhập mật khẩu",
+  "passwordMismatch": "Mật khẩu không khớp",
+  "enterPhone": "Vui lòng nhập số điện thoại",
+  "invalidPhone": "Số điện thoại không hợp lệ",
+  "enterVerificationCode": "Nhập mã xác nhận",
+  "agreeTermsWarning": "Bạn cần đồng ý với điều khoản sử dụng",
+  "sendCodeSuccess": "Đã gửi mã xác nhận về email!",
+  "sendCodeError": "Gửi mã thất bại!",
+  "sendCodeError500": "Lỗi khi gửi email, vui lòng thử lại",
+  "connectionError": "Lỗi kết nối: {error}",
+
+  "forgotPasswordTitle": "Quên mật khẩu",
+  "enterEmailLabel": "Email",
+  "enterEmailHint": "Nhập email của bạn",
+  "enterCodeLabel": "Mã xác nhận",
+  "enterCodeHint": "Nhập mã xác nhận đã gửi đến email",
+  "sendVerificationCodeButton": "Nhận mã",
+  "resendVerificationCodeButton": "Gửi lại ({seconds}s)",
+  "verifyCodeButton": "Xác nhận",
+  "backToLogin": "Quay lại đăng nhập",
+  "emailEmptyError": "Vui lòng nhập email",
+  "codeEmptyError": "Vui lòng nhập mã xác nhận",
+  "sendCodeSuccessMessage": "Mã xác nhận đã được gửi về email!",
+  "sendCodeFailedMessage": "Không thể gửi mã xác nhận!",
+  "codeInvalidMessage": "Mã xác nhận không hợp lệ!",
+  "verificationSuccessMessage": "Xác minh thành công!",
+
+  "defaultUserName": "Người dùng",
+  "homeTabHome": "Trang chủ",
+  "homeTabRecharge": "Nạp tiền",
+  "homeTabCreateOrder": "Tạo đơn",
+  "homeTabOrders": "Đơn hàng",
+  "homeTabTrade": "Giao dịch",
+  "homeTabProfile": "Tài khoản",
+  "welcomeTitle": "Chào mừng bạn đến với",
+  "welcomeAppName": "Beluga Express",
+  "welcomeMessage": "Chào mừng bạn đã đến với ứng dụng giao nhận quốc tế Beluga Express.",
+  "walletLabel": "Ví: {amount} VND",
+  "@walletLabel": {
+    "description": "Nhãn ví của người dùng",
+    "placeholders": {
+      "amount": {}
+    }
+  },
+
+
+  "profileTitle": "Trang cá nhân",
+  "profileName": "Họ tên",
+  "profileEmail": "Email",
+  "profilePhone": "Số điện thoại",
+  "changePasswordButton": "Đổi mật khẩu",
+  "logoutButton": "Đăng xuất",
+  "changeLanguage": "Thay đổi ngôn ngữ",
+
+  "rechargeTitle": "Nạp tiền vào ví",
+  "rechargeAmountHint": "Nhập số tiền nạp",
+  "rechargeMinAmountError": "Số tiền nạp tối thiểu là 50.000 VND",
+  "rechargeUserIdError": "Không lấy được ID người dùng.",
+  "rechargeQRCodeTitle": "Quét mã QR để thanh toán",
+  "rechargeQRCodeAmount": "Số tiền: {amount} VND",
+  "@rechargeQRCodeAmount": {
+    "description": "Nhãn số tiền nạp trong hộp thoại QR",
+    "placeholders": { "amount": {} }
+  },
+  "rechargeQRCodeContent": "Nội dung: {content}",
+  "@rechargeQRCodeContent": {
+    "description": "Thông tin nội dung trong hộp thoại QR",
+    "placeholders": { "content": {} }
+  },
+  "rechargeQRCodeCountdown": "Thời gian còn lại: {minutes}:{seconds}",
+  "@rechargeQRCodeCountdown": {
+    "description": "Đếm ngược thời gian trong hộp thoại QR",
+    "placeholders": { "minutes": {}, "seconds": {} }
+  },
+  "rechargeQRCodeCloseButton": "Đóng mã QR",
+  "rechargeSuccess": "✅ Nạp tiền thành công!",
+  "rechargeTimeout": "⛔ Hết thời gian thanh toán!",
+
+  "tradeTitle": "Lịch sử giao dịch",
+  "tradeNoTransactions": "Chưa có giao dịch nào",
+  "tradeAmountLabel": "Số tiền",
+  "tradePaymentForLabel": "Thanh toán cho",
+  "tradePaymentDateLabel": "Ngày thanh toán",
+
+  "orderTitle": "Danh sách đơn hàng",
+  "orderNoOrders": "Không có đơn hàng.",
+  "orderStatusAll": "Tất cả",
+  "orderStatusPickup": "Đang đến lấy hàng",
+  "orderStatusInTransitToHub": "Đang trên đường đến kho trung chuyển",
+  "orderStatusAtHub": "Đã đến kho",
+  "orderStatusAwaitingPayment": "Chờ thanh toán",
+  "orderStatusAwaitingShipment": "Chờ gửi hàng",
+  "orderStatusShipping": "Đang vận chuyển",
+  "orderStatusDelivered": "Giao hàng thành công",
+  "orderStatusCancelled": "Đã hủy",
+
+  "orderCodeLabel": "Mã đơn: {code}",
+  "@orderCodeLabel": {
+    "description": "Nhãn mã đơn",
+    "placeholders": { "code": {} }
+  },
+  "orderSenderLabel": "Người gửi: {name} ({phone})",
+  "@orderSenderLabel": {
+    "description": "Nhãn người gửi",
+    "placeholders": { "name": {}, "phone": {} }
+  },
+  "orderReceiverLabel": "Người nhận: {name}",
+  "@orderReceiverLabel": {
+    "description": "Nhãn người nhận",
+    "placeholders": { "name": {} }
+  },
+  "orderAddressLabel": "Địa chỉ: {address}",
+  "@orderAddressLabel": {
+    "description": "Nhãn địa chỉ nhận",
+    "placeholders": { "address": {} }
+  },
+
+  "orderTotalLabel": "Tổng: {amount}",
+  "@orderTotalLabel": {
+    "description": "Tổng tiền đơn hàng",
+    "placeholders": { "amount": {} }
+  },
+  "orderDownPaymentLabel": "Cọc: {amount}",
+  "@orderDownPaymentLabel": {
+    "description": "Tiền cọc đơn hàng",
+    "placeholders": { "amount": {} }
+  },
+
+  "orderPaymentButton": "Thanh toán {amount}",
+  "@orderPaymentButton": {
+    "description": "Nút thanh toán đơn hàng qua ví",
+    "placeholders": { "amount": {} }
+  },
+  "orderDialogTitle": "Đơn hàng",
+  "orderInsufficientWallet": "Số dư ví không đủ. Vui lòng nạp thêm.",
+  "orderExpiredSession": "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.",
+  "orderPaymentSuccess": "Thanh toán thành công",
+  "orderQrTitle": "Quét mã QR để thanh toán",
+  "orderQrAmount": "Số tiền: {amount}",
+  "@orderQrAmount": {
+    "description": "Số tiền trong hộp thoại QR",
+    "placeholders": { "amount": {} }
+  },
+  "orderQrContent": "Nội dung: {content}",
+  "@orderQrContent": {
+    "description": "Nội dung trong hộp thoại QR",
+    "placeholders": { "content": {} }
+  },
+  "orderQrCloseButton": "Đóng mã QR",
+  "orderStatusDetailButton": "Chi tiết trạng thái",
+
+  "createOrderTitle": "Tạo đơn hàng",
+  "createOrderSenderSection": "Thông tin người gửi",
+  "createOrderReceiverSection": "Thông tin người nhận",
+  "createOrderItemsSection": "Thông tin mặt hàng",
+
+  "createOrderSenderPhone": "Số điện thoại người gửi",
+  "createOrderSenderName": "Họ tên người gửi",
+  "createOrderSenderAddress": "Địa chỉ lấy hàng",
+  "createOrderReceiverPhone": "Số điện thoại người nhận",
+  "createOrderReceiverName": "Họ tên người nhận",
+  "createOrderReceiverAddress": "Địa chỉ người nhận",
+  "createOrderReceiverCountry": "Quốc gia nhận",
+
+  "createOrderItemType": "Loại hàng",
+  "createOrderItemWeight": "Số lượng ({unit})",
+  "createOrderItemRemove": "Xoá mặt hàng",
+  "createOrderAddItem": "Thêm mặt hàng",
+  "createOrderConfirmButton": "Xác nhận đơn hàng",
+
+  "createOrderErrorEmptyField": "Vui lòng kiểm tra lại thông tin!",
+  "createOrderErrorCountry": "Vui lòng chọn quốc gia!",
+  "createOrderErrorInvalidWeight": "Vui lòng nhập số lượng hợp lệ cho mỗi mặt hàng!",
+  "createOrderErrorNoItems": "Đơn hàng phải có ít nhất một mặt hàng!",
+  "createOrderErrorWalletFetch": "Lỗi khi lấy số dư ví: {code}",
+  "@createOrderErrorWalletFetch": {
+    "description": "Lỗi khi lấy số dư ví",
+    "placeholders": { "code": {} }
+  },
+
+  "confirmOrderTitle": "Xác nhận đơn hàng",
+  "confirmOrderSenderSection": "Thông tin người gửi",
+  "confirmOrderReceiverSection": "Thông tin người nhận",
+  "confirmOrderItemsSection": "Chi tiết hàng hoá",
+  "confirmOrderWalletBalance": "Số dư ví hiện tại: {balance} VND",
+  "@confirmOrderWalletBalance": {
+    "description": "Số dư ví hiện tại",
+    "placeholders": { "balance": {} }
+  },
+  "confirmOrderDepositButton": "Xác nhận đặt cọc 500.000 VND",
+  "confirmOrderDialogTitle": "Thông báo",
+  "confirmOrderDialogFetchError": "Không thể lấy số dư ví.",
+  "confirmOrderDialogInsufficientWallet": "Số dư ví không đủ để tạo đơn hàng. Vui lòng nạp thêm.",
+  "confirmOrderDialogCreateSuccess": "Tạo đơn hàng thành công! Mã đơn: {code}",
+  "@confirmOrderDialogCreateSuccess": {
+    "description": "Tạo đơn thành công",
+    "placeholders": { "code": {} }
+  },
+  "confirmOrderDialogCreateFailed": "Tạo đơn thất bại!",
+  "confirmOrderDialogSessionExpired": "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.",
+  "confirmOrderDialogUnknownError": "Lỗi không xác định. Mã lỗi: {code}",
+  "@confirmOrderDialogUnknownError": {
+    "description": "Lỗi không xác định",
+    "placeholders": { "code": {} }
+  },
+
+  "changePasswordTitle": "Đổi mật khẩu",
+  "changePasswordNew": "Mật khẩu mới",
+  "changePasswordConfirm": "Xác nhận mật khẩu",
+  "againConfirmPasswordButton": "Xác nhận",
+  "changePasswordBackLogin": "Quay về đăng nhập",
+  "changePasswordErrorEmpty": "Vui lòng nhập mật khẩu mới",
+  "changePasswordErrorWeak": "Mật khẩu phải ≥8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt",
+  "changePasswordErrorConfirmEmpty": "Vui lòng nhập lại mật khẩu",
+  "changePasswordErrorNotMatch": "Mật khẩu xác nhận không khớp",
+  "changePasswordSuccess": "Đổi mật khẩu thành công!",
+  "changePasswordEmailNotRegistered": "Tài khoản email này chưa được đăng ký!",
+  "changePasswordFailed": "Đổi mật khẩu thất bại!",
+  "changePasswordConnectionError": "Lỗi kết nối: {error}",
+  "@changePasswordConnectionError": {
+    "description": "Lỗi kết nối",
+    "placeholders": { "error": {} }
+  },
+
+
+  "orderStatusScreenTitle": "Danh sách đơn hàng",
+  "orderStatusTabAll": "Tất cả",
+  "orderStatusTabPickup": "Đang đến lấy hàng",
+  "orderStatusTabInTransit": "Đang trên đường đến kho",
+  "orderStatusTabAtHub": "Đã đến kho",
+  "orderStatusTabAwaitingPayment": "Chờ thanh toán",
+  "orderStatusTabAwaitingShipment": "Chờ gửi hàng",
+  "orderStatusTabShipping": "Đang vận chuyển",
+  "orderStatusTabDelivered": "Giao hàng thành công",
+  "orderStatusTabCancelled": "Đã hủy",
+
+  "orderStatusLabel": "Trạng thái: {status}",
+  "@orderStatusLabel": {
+    "description": "Nhãn trạng thái đơn hàng",
+    "placeholders": { "status": {} }
+  },
+
+  "orderReceiverLabel": "Người nhận: {name}",
+  "@orderReceiverLabel": {
+    "description": "Nhãn tên người nhận",
+    "placeholders": { "name": {} }
+  },
+
+  "orderAddressLabel": "Địa chỉ: {address}",
+  "@orderAddressLabel": {
+    "description": "Nhãn địa chỉ người nhận",
+    "placeholders": { "address": {} }
+  },
+
+  "orderPhoneLabel": "SĐT: {phone}",
+  "@orderPhoneLabel": {
+    "description": "Nhãn số điện thoại người nhận",
+    "placeholders": { "phone": {} }
+  },
+
+  "orderDownPaymentLabel": "Đặt cọc: {amount}",
+  "@orderDownPaymentLabel": {
+    "description": "Nhãn số tiền đặt cọc",
+    "placeholders": { "amount": {} }
+  },
+
+  "orderBalancePaymentLabel": "Thanh toán số dư: {amount}",
+  "@orderBalancePaymentLabel": {
+    "description": "Nhãn số tiền còn lại phải thanh toán",
+    "placeholders": { "amount": {} }
+  },
+
+  "orderCreatedDateLabel": "Ngày tạo: {date}",
+  "@orderCreatedDateLabel": {
+    "description": "Nhãn ngày tạo đơn",
+    "placeholders": { "date": {} }
+  },
+
+  "orderItemListLabel": "Danh sách hàng hóa:",
+  "orderUpdatedDetailsLabel": "Chi tiết sau cập nhật",
+  "orderUpdatedNotice": "Lưu ý: Đây là nội dung đã chỉnh trong màn hình 'Cập nhật đơn hàng' (chưa gửi nếu chưa bấm nút hành động màu xanh).",
+
+  "orderActionChangeStatus": "Đổi trạng thái",
+  "orderActionUpdateOrder": "Cập nhật đơn hàng",
+
+  "orderSnackUpdateSuccess": "Cập nhật đơn hàng thành công",
+  "orderSnackUpdateFailed": "Cập nhật đơn hàng thất bại",
+  "orderSnackSessionExpired": "Phiên đăng nhập hết hạn",
+
+  "contractorHomeAppBarTitle": "Beluga Express",
+  "contractorHomeWelcomeTitle": "Chào mừng đến với Beluga Express!",
+  "contractorHomeWelcomeMessage": "Lựa chọn và cập nhật trạng thái đơn hàng khả dụng.",
+  "contractorHomeViewOrdersButton": "Xem đơn khả dụng",
+  "contractorHomeTabHome": "Trang chủ",
+  "contractorHomeTabOrders": "Đơn hàng",
+  "contractorHomeTabProfile": "Tài khoản",
+
+
+  "updateOrderAppBarTitle": "Cập nhật đơn hàng",
+  "updateOrderItemTypeLabel": "Loại hàng",
+  "updateOrderQuantityLabelKg": "Kg",
+  "updateOrderQuantityLabelUnit": "{unit}",
+  "@updateOrderQuantityLabelUnit": {
+    "description": "Nhãn cho số lượng với đơn vị khác Kg",
+    "placeholders": {
+      "unit": {}
+    }
+  },
+  "updateOrderDeleteItemTooltip": "Xoá mặt hàng",
+  "updateOrderAddItemButton": "Thêm mặt hàng",
+  "updateOrderConfirmDialogTitle": "Xác nhận cập nhật đơn hàng",
+  "updateOrderConfirmDialogChangesLabel": "Chi tiết thay đổi:",
+  "updateOrderConfirmButton": "Cập nhật",
+  "updateOrderCancelButton": "Huỷ",
+  "updateOrderInvalidQuantityMessage": "Vui lòng nhập số lượng hợp lệ cho mỗi mặt hàng",
+  "updateOrderLoadingPricingMessage": "Đang tải bảng giá...",
+  "updateOrderPricingErrorMessage": "Lỗi khi lấy bảng giá: {error}",
+  "@updateOrderPricingErrorMessage": {
+    "description": "Thông báo lỗi khi lấy bảng giá",
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "updateOrderPricingLoadedMessage": "Đã tải {count} mục trong bảng giá",
+  "@updateOrderPricingLoadedMessage": {
+    "description": "Thông báo số lượng mặt hàng trong bảng giá đã tải",
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "updateOrderNoItemsMessage": "Chưa có hàng hóa. Nhấn Thêm để thêm.",
+  "cancel": "Huỷ",
+  "confirm": "Xác nhận",
+  "update": "Cập nhật"
+
+
+
+
+}

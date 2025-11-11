@@ -3,20 +3,20 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   static const String _accountBaseUrl =
-      "https://reekingly-noninduced-chanel.ngrok-free.app/api/accountapi";
+      "https://belugaexpress.com/api/accountapi";
   static const String _homeBaseUrl =
-      "https://reekingly-noninduced-chanel.ngrok-free.app/api/homeapi";
+      "https://belugaexpress.com/api/homeapi";
   static const String _orderBaseUrl =
-      "https://reekingly-noninduced-chanel.ngrok-free.app/api/orderapi";
+      "https://belugaexpress.com/api/orderapi";
   static const String _countryBaseUrl =
-      "https://reekingly-noninduced-chanel.ngrok-free.app/api/countryapi";
+      "https://belugaexpress.com/api/countryapi";
   static const String _pricingTableBaseUrl =
-      "https://reekingly-noninduced-chanel.ngrok-free.app/api/pricingtableapi";
+      "https://belugaexpress.com/api/pricingtableapi";
   static const String _paymentBaseUrl =
-      "https://reekingly-noninduced-chanel.ngrok-free.app/api/paymentapi";
-  static const String _createOrderUrl = "https://reekingly-noninduced-chanel.ngrok-free.app/api/orderapi/create";
-  static const String _getOrdersUrl = "https://reekingly-noninduced-chanel.ngrok-free.app/api/orderapi/my-orders";
-  static const String _orderDetailUrl = "https://reekingly-noninduced-chanel.ngrok-free.app/api/orderapi";
+      "https://belugaexpress.com/api/paymentapi";
+  static const String _createOrderUrl = "https://belugaexpress.com/api/orderapi/create";
+  static const String _getOrdersUrl = "https://belugaexpress.com/api/orderapi/my-orders";
+  static const String _orderDetailUrl = "https://belugaexpress.com/api/orderapi";
 
   /// ------------------ AUTH & ACCOUNT ------------------
 
@@ -38,6 +38,7 @@ class ApiService {
     required String phoneNumber,
     required String code,
     String? referredByCode,
+    String? phoneZalo, // thêm dòng này
   }) async {
     final url = Uri.parse("$_accountBaseUrl/register");
     final body = {
@@ -46,12 +47,17 @@ class ApiService {
       "fullName": fullName,
       "phoneNumber": phoneNumber,
       "code": code,
-      // Thêm trường này trực tiếp, không cần kiểm tra isNotEmpty
+      // Nếu không có giá trị thì gửi null cũng được
       "referredByCode": referredByCode,
+      "phoneZalo": phoneZalo,
     };
-    return await http.post(url,
-        body: jsonEncode(body), headers: {"Content-Type": "application/json"});
+    return await http.post(
+      url,
+      body: jsonEncode(body),
+      headers: {"Content-Type": "application/json"},
+    );
   }
+
 
   /// Xác minh mã code (cho màn hình quên mật khẩu)
   static Future<http.Response> verifyCode({
@@ -195,7 +201,7 @@ class ApiService {
     required String content,
   }) async {
     final url = Uri.parse(
-        "https://reekingly-noninduced-chanel.ngrok-free.app/api/paymentapi/check-transaction");
+        "https://belugaexpress.com/api/paymentapi/check-transaction");
 
     final request = http.Request('GET', url)
       ..headers['Content-Type'] = 'application/json'
@@ -225,7 +231,7 @@ class ApiService {
 
   /// API lấy danh sách đơn hàng cho nhà thầu
   static Future<http.Response> getContractorOrders({required String accessToken}) async {
-    final url = Uri.parse('https://reekingly-noninduced-chanel.ngrok-free.app/api/contractorapi/orders');
+    final url = Uri.parse('https://belugaexpress.com/api/contractorapi/orders');
     final response = await http.get(
       url,
       headers: {
@@ -284,7 +290,7 @@ class ApiService {
     required double downPayment,
     required List<Map<String, dynamic>> orderItems,
   }) async {
-    final url = Uri.parse("https://reekingly-noninduced-chanel.ngrok-free.app/api/orderapi/create-ver2");
+    final url = Uri.parse("https://belugaexpress.com/api/orderapi/create-ver2");
     final headers = {
       "Content-Type": "application/json",
       "Authorization": "Bearer $accessToken",

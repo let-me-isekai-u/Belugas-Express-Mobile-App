@@ -6,17 +6,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/order_model.dart';
 import '../services/api_service.dart';
 import 'order_detail_screen.dart';
+import '../l10n/app_localizations.dart';
 
-const List<Map<String, dynamic>> _statusTabs = [
-  {"id": 0, "name": "Tất cả"},
-  {"id": 1, "name": "Đang đến lấy hàng"},
-  {"id": 2, "name": "Đang trên đường đến kho trung chuyển"},
-  {"id": 3, "name": "Đã đến kho"},
-  {"id": 4, "name": "Chờ thanh toán"},
-  {"id": 5, "name": "Chờ gửi hàng"},
-  {"id": 6, "name": "Đang vận chuyển"},
-  {"id": 7, "name": "Giao hàng thành công"},
-  {"id": 8, "name": "Đã hủy"},
+// Sử dụng statusTabs có text động từ localization
+List<Map<String, dynamic>> getStatusTabs(AppLocalizations loc) => [
+  {"id": 0, "name": loc.orderStatusAll},
+  {"id": 1, "name": loc.orderStatusPickup},
+  {"id": 2, "name": loc.orderStatusInTransitToHub},
+  {"id": 3, "name": loc.orderStatusAtHub},
+  {"id": 4, "name": loc.orderStatusAwaitingPayment},
+  {"id": 5, "name": loc.orderStatusAwaitingShipment},
+  {"id": 6, "name": loc.orderStatusShipping},
+  {"id": 7, "name": loc.orderStatusDelivered},
+  {"id": 8, "name": loc.orderStatusCancelled},
 ];
 
 class OrderScreen extends StatefulWidget {
@@ -34,15 +36,27 @@ class _OrderScreenState extends State<OrderScreen> with SingleTickerProviderStat
   String _accessToken = '';
   final Set<int> _processingOrderIds = {};
   late TabController _tabController;
+  late List<Map<String, dynamic>> _statusTabs;
 
   @override
   void initState() {
     super.initState();
+    // Khởi tạo mảng _statusTabs với tên rỗng, sẽ fill lại bằng loc trong build
+    _statusTabs = [
+      {"id": 0, "name": ""},
+      {"id": 1, "name": ""},
+      {"id": 2, "name": ""},
+      {"id": 3, "name": ""},
+      {"id": 4, "name": ""},
+      {"id": 5, "name": ""},
+      {"id": 6, "name": ""},
+      {"id": 7, "name": ""},
+      {"id": 8, "name": ""},
+    ];
+    _tabController = TabController(length: _statusTabs.length, vsync: this);
     _futureOrders = _loadOrders();
     _loadProfileMeta();
-    // Always fetch wallet on entering this screen
     _fetchWallet();
-    _tabController = TabController(length: _statusTabs.length, vsync: this);
   }
 
   @override
@@ -83,7 +97,6 @@ class _OrderScreenState extends State<OrderScreen> with SingleTickerProviderStat
       final res = await ApiService.getWalletBalance(accessToken: token);
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body);
-        // Expecting { "success": true, "wallet": 123000 }
         if (body is Map && (body['success'] == true || body.containsKey('wallet'))) {
           final w = body['wallet'];
           if (w is num) {
@@ -102,10 +115,9 @@ class _OrderScreenState extends State<OrderScreen> with SingleTickerProviderStat
           debugPrint("getWalletBalance unexpected body: ${res.body}");
         }
       } else if (res.statusCode == 401) {
-        // token expired
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.")),
+            SnackBar(content: Text(AppLocalizations.of(context)!.orderExpiredSession)),
           );
         }
       } else {
@@ -127,11 +139,13 @@ class _OrderScreenState extends State<OrderScreen> with SingleTickerProviderStat
     } else if (response.statusCode == 404) {
       return [];
     } else {
-      throw Exception("Lỗi tải đơn hàng (${response.statusCode})");
+      throw Exception("Error loading orders (${response.statusCode})");
     }
   }
 
-  String _fmtMoney(num v) => "${v.toStringAsFixed(0)} đ";
+  String _fmtMoney(BuildContext context, num v) {
+    return "${v.toStringAsFixed(0)} đ";
+  }
 
   void _showStatusNote(BuildContext context, Order order) {
     if (order.statusNote == null) return;
@@ -141,13 +155,14 @@ class _OrderScreenState extends State<OrderScreen> with SingleTickerProviderStat
         title: Text(order.statusText),
         content: Text(order.statusNote!),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Đóng")),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context)!.orderQrCloseButton)),
         ],
       ),
     );
   }
 
   void _showQrDialog(Order order) {
+    final loc = AppLocalizations.of(context)!;
     final total = order.total;
     final downPayment = order.downPayment;
     final toPay = total - downPayment;
@@ -155,7 +170,6 @@ class _OrderScreenState extends State<OrderScreen> with SingleTickerProviderStat
     final timestamp =
         "${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}";
     final description = "${_userId}$timestamp";
-
     final qrUrl =
         "https://img.vietqr.io/image/MB-34567200288888-compact2.png?amount=${toPay.toStringAsFixed(0)}&addInfo=${description}&accountName=LY%20NHAT%20ANH";
 
@@ -169,8 +183,8 @@ class _OrderScreenState extends State<OrderScreen> with SingleTickerProviderStat
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text("Quét mã QR để thanh toán",
-                  style: TextStyle(
+              Text(loc.orderQrTitle,
+                  style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
                       color: Colors.blue)),
@@ -179,20 +193,20 @@ class _OrderScreenState extends State<OrderScreen> with SingleTickerProviderStat
                 return const SizedBox(height: 240, width: 240, child: Center(child: Icon(Icons.broken_image)));
               }),
               const SizedBox(height: 10),
-              Text("Số tiền: ${_fmtMoney(toPay)}",
+              Text(loc.orderQrAmount(toPay.toStringAsFixed(0)),
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              Text("Nội dung: $description", style: const TextStyle(color: Colors.orange)),
+              Text(loc.orderQrContent(description), style: const TextStyle(color: Colors.orange)),
               const SizedBox(height: 5),
-              const Text(
-                "Sau khi chuyển khoản, hệ thống sẽ kiểm tra tự động.\nVui lòng không tắt màn hình khi chưa xác nhận.",
-                style: TextStyle(fontSize: 13, color: Colors.grey),
+              Text(
+                "After transfer, the system will check automatically.\nPlease do not close the screen before confirmation.",
+                style: const TextStyle(fontSize: 13, color: Colors.grey),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 10),
               TextButton.icon(
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(Icons.close, color: Colors.red),
-                label: const Text("Đóng mã QR", style: TextStyle(color: Colors.red)),
+                label: Text(loc.orderQrCloseButton, style: const TextStyle(color: Colors.red)),
               ),
             ],
           ),
@@ -202,15 +216,15 @@ class _OrderScreenState extends State<OrderScreen> with SingleTickerProviderStat
   }
 
   Future<void> _attemptWalletPayment(Order order) async {
-    // Ensure we have the latest wallet balance
     await _fetchWallet();
 
     final toPay = order.total - order.downPayment;
+    final loc = AppLocalizations.of(context)!;
 
     if (_walletBalance < toPay) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Số dư ví không đủ. Vui lòng nạp thêm."), backgroundColor: Colors.red),
+          SnackBar(content: Text(loc.orderInsufficientWallet), backgroundColor: Colors.red),
         );
       }
       return;
@@ -221,7 +235,7 @@ class _OrderScreenState extends State<OrderScreen> with SingleTickerProviderStat
     if (token.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Vui lòng đăng nhập."), backgroundColor: Colors.red),
+          SnackBar(content: Text(loc.orderExpiredSession), backgroundColor: Colors.red),
         );
       }
       return;
@@ -234,19 +248,17 @@ class _OrderScreenState extends State<OrderScreen> with SingleTickerProviderStat
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         if (data is Map && (data['success'] == true || data['newStatus'] != null)) {
-          // Payment/confirmation succeeded
           final orderId = data['orderId'] ?? order.id;
           if (mounted) {
             showDialog(
               context: context,
               builder: (_) => AlertDialog(
-                title: const Text("Thành công"),
-                content: Text(data['message']?.toString() ?? "Cập nhật trạng thái đơn thành công."),
+                title: Text(loc.orderPaymentSuccess),
+                content: Text(data['message']?.toString() ?? loc.orderPaymentSuccess),
                 actions: [
                   TextButton(
                     onPressed: () {
                       Navigator.pop(context);
-                      // Navigate to detail screen, replace this screen
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (_) => OrderDetailScreen(orderId: orderId)),
@@ -258,14 +270,13 @@ class _OrderScreenState extends State<OrderScreen> with SingleTickerProviderStat
               ),
             );
           }
-          // Refresh orders in background WITHOUT passing a Future into setState
           _futureOrders = _loadOrders();
-          if (mounted) {
-            setState(() {});
-          }
+          if (mounted) setState(() {});
           return;
         } else {
-          final msg = (data is Map && data['message'] != null) ? data['message'].toString() : "Không thể xác nhận đơn.";
+          final msg = (data is Map && data['message'] != null)
+              ? data['message'].toString()
+              : "Order confirmation failed.";
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.orange));
           }
@@ -273,25 +284,25 @@ class _OrderScreenState extends State<OrderScreen> with SingleTickerProviderStat
       } else if (res.statusCode == 111) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Số dư ví không đủ để thanh toán!"), backgroundColor: Colors.red),
+            SnackBar(content: Text(loc.orderInsufficientWallet), backgroundColor: Colors.red),
           );
         }
       } else if (res.statusCode == 222) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Đơn hàng này đang không ở trạng thái 4"), backgroundColor: Colors.orange),
+            SnackBar(content: Text("Order not in status 4"), backgroundColor: Colors.orange),
           );
         }
       } else if (res.statusCode == 401) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại."), backgroundColor: Colors.red),
+            SnackBar(content: Text(loc.orderExpiredSession), backgroundColor: Colors.red),
           );
         }
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Lỗi khi xác nhận đơn: ${res.statusCode}"), backgroundColor: Colors.red),
+            SnackBar(content: Text("Error confirming order: ${res.statusCode}"), backgroundColor: Colors.red),
           );
         }
       }
@@ -299,17 +310,15 @@ class _OrderScreenState extends State<OrderScreen> with SingleTickerProviderStat
       debugPrint("Error confirming order payment: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Lỗi kết nối: $e"), backgroundColor: Colors.red),
+          SnackBar(content: Text("Connection error: $e"), backgroundColor: Colors.red),
         );
       }
     } finally {
-      if (mounted) {
-        setState(() => _processingOrderIds.remove(order.id));
-      }
+      if (mounted) setState(() => _processingOrderIds.remove(order.id));
     }
   }
 
-  Widget _buildOrderTile(Order o) {
+  Widget _buildOrderTile(Order o, AppLocalizations loc) {
     return InkWell(
       onTap: () => Navigator.push(
         context,
@@ -326,7 +335,6 @@ class _OrderScreenState extends State<OrderScreen> with SingleTickerProviderStat
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Fix tràn cho dòng trạng thái
             Row(
               children: [
                 Icon(o.statusIcon, color: o.statusColor),
@@ -340,35 +348,33 @@ class _OrderScreenState extends State<OrderScreen> with SingleTickerProviderStat
                   IconButton(
                     onPressed: () => _showStatusNote(context, o),
                     icon: Icon(Icons.info_outline, color: o.statusColor, size: 18),
-                    tooltip: "Chi tiết trạng thái",
+                    tooltip: loc.orderStatusDetailButton,
                   ),
               ],
             ),
             const SizedBox(height: 4),
-            Text("Mã đơn: ${o.orderCode}", style: const TextStyle(fontSize: 15)),
+            Text(loc.orderCodeLabel(o.orderCode), style: const TextStyle(fontSize: 15)),
             const SizedBox(height: 4),
-            Text("Người gửi: ${o.senderName} (${o.senderPhone})", overflow: TextOverflow.ellipsis),
-            Text("Người nhận: ${o.receiverName}", overflow: TextOverflow.ellipsis),
-            Text("Địa chỉ: ${o.receiverAddress}", overflow: TextOverflow.ellipsis),
+            Text(loc.orderSenderLabel(o.senderName, o.senderPhone), overflow: TextOverflow.ellipsis),
+            Text(loc.orderReceiverLabel(o.receiverName), overflow: TextOverflow.ellipsis),
+            Text(loc.orderAddressLabel(o.receiverAddress), overflow: TextOverflow.ellipsis),
             const Divider(height: 18),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text("Tổng: ${_fmtMoney(o.total)}",
+                  child: Text(loc.orderTotalLabel(_fmtMoney(context, o.total)),
                       style: const TextStyle(fontWeight: FontWeight.w500)),
                 ),
                 Expanded(
-                  child: Text("Cọc: ${_fmtMoney(o.downPayment)}",
+                  child: Text(loc.orderDownPaymentLabel(_fmtMoney(context, o.downPayment)),
                     textAlign: TextAlign.right,
                     style: const TextStyle(fontWeight: FontWeight.w500),
                     overflow: TextOverflow.ellipsis,
                   ),
-
                 ),
               ],
             ),
-            // Chỉ hiện nút thanh toán khi status == 4 và tiền cọc < tổng
             if (o.status == 4 && o.downPayment < o.total)
               Align(
                 alignment: Alignment.centerRight,
@@ -387,9 +393,8 @@ class _OrderScreenState extends State<OrderScreen> with SingleTickerProviderStat
                   ),
                   onPressed: () => _attemptWalletPayment(o),
                   icon: const Icon(Icons.payment),
-                  // NOTE: Do not use Flexible/Expanded directly inside label.
                   label: Text(
-                    "Thanh toán ${_fmtMoney(o.total - o.downPayment)}",
+                    loc.orderPaymentButton(_fmtMoney(context, o.total - o.downPayment)),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -400,15 +405,14 @@ class _OrderScreenState extends State<OrderScreen> with SingleTickerProviderStat
     );
   }
 
-  Widget _buildListForStatus(int status, List<Order> orders) {
+  Widget _buildListForStatus(int status, List<Order> orders, AppLocalizations loc) {
     final filtered = status == 0 ? orders : orders.where((o) => o.status == status).toList();
     if (filtered.isEmpty) {
-      return const Center(child: Text("Không có đơn hàng."));
+      return Center(child: Text(loc.orderNoOrders));
     }
 
     return RefreshIndicator(
       onRefresh: () async {
-        // refresh same future and rebuild
         _futureOrders = _loadOrders();
         setState(() {});
         await _futureOrders;
@@ -416,20 +420,38 @@ class _OrderScreenState extends State<OrderScreen> with SingleTickerProviderStat
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: filtered.length,
-        itemBuilder: (context, index) => _buildOrderTile(filtered[index]),
+        itemBuilder: (context, index) => _buildOrderTile(filtered[index], loc),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    // fill lại text tab mỗi lần build (theo locale mới)
+    final statusNames = [
+      loc.orderStatusAll,
+      loc.orderStatusPickup,
+      loc.orderStatusInTransitToHub,
+      loc.orderStatusAtHub,
+      loc.orderStatusAwaitingPayment,
+      loc.orderStatusAwaitingShipment,
+      loc.orderStatusShipping,
+      loc.orderStatusDelivered,
+      loc.orderStatusCancelled,
+    ];
+
+    for (int i = 0; i < _statusTabs.length; i++) {
+      _statusTabs[i]['name'] = statusNames[i];
+    }
+
     return DefaultTabController(
       length: _statusTabs.length,
       child: Scaffold(
         backgroundColor: const Color(0xFFF6FAFF),
         appBar: AppBar(
           backgroundColor: Colors.blue[300],
-          title: const Text("Danh sách đơn hàng"),
+          title: Text(loc.orderTitle),
           bottom: TabBar(
             controller: _tabController,
             isScrollable: true,
@@ -445,17 +467,16 @@ class _OrderScreenState extends State<OrderScreen> with SingleTickerProviderStat
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
-              return Center(child: Text("Lỗi: ${snapshot.error}"));
+              return Center(child: Text("Error: ${snapshot.error}"));
             } else if (!snapshot.hasData) {
-              return const Center(child: Text("Không có đơn hàng."));
+              return Center(child: Text(loc.orderNoOrders));
             }
-
             final orders = snapshot.data!;
             return TabBarView(
               controller: _tabController,
               children: _statusTabs.map((s) {
                 final statusId = s["id"] as int;
-                return _buildListForStatus(statusId, orders);
+                return _buildListForStatus(statusId, orders, loc);
               }).toList(),
             );
           },

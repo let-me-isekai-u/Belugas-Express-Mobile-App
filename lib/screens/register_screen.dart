@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../models/register_model.dart';
 import 'terms_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+  final void Function(Locale)? onLocaleChange;
+  const RegisterScreen({super.key, this.onLocaleChange});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -21,6 +23,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _phoneController = TextEditingController();
   final _codeController = TextEditingController();
   final _referralController = TextEditingController();
+  final _zaloController = TextEditingController(); // Thêm controller mới
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -60,8 +63,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _sendCode() async {
+    final loc = AppLocalizations.of(context)!;
+
     if (_emailController.text.trim().isEmpty) {
-      _showSnackBar("Vui lòng nhập email trước khi nhận mã", Colors.orange);
+      _showSnackBar(loc.enterEmail, Colors.orange);
       return;
     }
 
@@ -73,25 +78,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       if (response.statusCode == 200) {
-        _showSnackBar("Đã gửi mã xác nhận về email!", Colors.blue);
+        _showSnackBar(loc.sendCodeSuccess, Colors.blue);
         _startCountdown();
       } else if (response.statusCode == 500) {
-        _showSnackBar("Internal Server Error: Lỗi khi gửi email, vui lòng thử lại", Colors.red);
+        _showSnackBar(loc.sendCodeError500, Colors.red);
       } else {
-        final errorMsg = response.body.isNotEmpty ? response.body : "Gửi mã thất bại!";
+        final errorMsg = response.body.isNotEmpty ? response.body : loc.sendCodeError;
         _showSnackBar(errorMsg, Colors.red);
       }
     } catch (e) {
-      _showSnackBar("Lỗi kết nối: $e", Colors.red);
+      _showSnackBar(loc.connectionError(e.toString()), Colors.red);
     } finally {
       setState(() => _isSendingCode = false);
     }
   }
 
   Future<void> _register() async {
+    final loc = AppLocalizations.of(context)!;
+
     if (!_formKey.currentState!.validate()) return;
     if (!_agreeTerms) {
-      _showSnackBar("Bạn cần đồng ý với điều khoản sử dụng", Colors.orange);
+      _showSnackBar(loc.agreeTermsWarning, Colors.orange);
       return;
     }
 
@@ -107,16 +114,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
         referredByCode: _referralController.text.trim().isEmpty
             ? null
             : _referralController.text.trim(),
+        phoneZalo: _zaloController.text.trim(), // Gửi luôn, có thể trống
       );
 
-      if (message == "Đăng ký thành công!") {
+      // RegisterModel.register returns a message string from server (may be localized server-side).
+      // We show it directly. If you want to map known success messages to loc strings, change here.
+      if (message == "Đăng ký thành công!" || message.toLowerCase().contains("success")) {
         _showSnackBar(message, Colors.green);
         Navigator.pop(context);
       } else {
         _showSnackBar(message, Colors.red);
       }
     } catch (e) {
-      _showSnackBar("Lỗi kết nối: $e", Colors.red);
+      _showSnackBar("${loc.sendCodeError}: $e", Colors.red);
     } finally {
       setState(() => _isLoading = false);
     }
@@ -124,6 +134,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: Colors.blue[700],
       body: SafeArea(
@@ -134,9 +146,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               children: [
                 const Icon(Icons.app_registration, size: 80, color: Colors.white),
                 const SizedBox(height: 12),
-                const Text(
-                  "Beluga Express",
-                  style: TextStyle(
+                Text(
+                  loc.registerTitle,
+                  style: const TextStyle(
                     fontFamily: 'Serif',
                     color: Colors.white,
                     fontSize: 32,
@@ -145,7 +157,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 30),
 
-                // Form đăng ký
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -165,21 +176,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       children: [
                         _buildTextField(
                           controller: _nameController,
-                          hint: "Tên",
+                          hint: loc.nameHint,
                           icon: Icons.person,
-                          validator: (v) => v == null || v.isEmpty ? "Vui lòng nhập tên" : null,
+                          validator: (v) => v == null || v.isEmpty ? loc.enterName : null,
                         ),
                         const SizedBox(height: 15),
 
                         _buildTextField(
                           controller: _emailController,
-                          hint: "Email",
+                          hint: loc.emailHint,
                           icon: Icons.email,
                           keyboardType: TextInputType.emailAddress,
                           validator: (value) {
-                            if (value == null || value.isEmpty) return "Vui lòng nhập email";
+                            if (value == null || value.isEmpty) return loc.enterEmail;
                             final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                            if (!emailRegex.hasMatch(value)) return "Email không hợp lệ";
+                            if (!emailRegex.hasMatch(value)) return loc.invalidEmail;
                             return null;
                           },
                         ),
@@ -187,7 +198,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                         _buildPasswordField(
                           controller: _passwordController,
-                          hint: "Mật khẩu",
+                          hint: loc.passwordHint,
                           obscure: _obscurePassword,
                           onToggle: () => setState(() => _obscurePassword = !_obscurePassword),
                         ),
@@ -195,12 +206,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                         _buildPasswordField(
                           controller: _confirmPasswordController,
-                          hint: "Xác nhận mật khẩu",
+                          hint: loc.confirmPasswordHint,
                           obscure: _obscureConfirmPassword,
                           onToggle: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
                           validator: (value) {
-                            if (value == null || value.isEmpty) return "Vui lòng xác nhận mật khẩu";
-                            if (value != _passwordController.text) return "Mật khẩu không khớp";
+                            if (value == null || value.isEmpty) return loc.enterPassword;
+                            if (value != _passwordController.text) return loc.passwordMismatch;
                             return null;
                           },
                         ),
@@ -208,12 +219,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                         _buildTextField(
                           controller: _phoneController,
-                          hint: "Số điện thoại",
+                          hint: loc.phoneHint,
                           icon: Icons.phone,
                           keyboardType: TextInputType.phone,
                           validator: (value) {
-                            if (value == null || value.isEmpty) return "Vui lòng nhập số điện thoại";
-                            if (!RegExp(r'^[0-9]{9,11}$').hasMatch(value)) return "Số điện thoại không hợp lệ";
+                            if (value == null || value.isEmpty) return loc.enterPhone;
+                            if (!RegExp(r'^[0-9]{9,11}$').hasMatch(value)) return loc.invalidPhone;
                             return null;
                           },
                         ),
@@ -225,10 +236,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             Expanded(
                               child: _buildTextField(
                                 controller: _codeController,
-                                hint: "Mã xác nhận",
+                                hint: loc.verificationCodeHint,
                                 icon: Icons.verified,
                                 keyboardType: TextInputType.number,
-                                validator: (v) => v == null || v.isEmpty ? "Nhập mã xác nhận" : null,
+                                validator: (v) => v == null || v.isEmpty ? loc.enterVerificationCode : null,
                               ),
                             ),
                             const SizedBox(width: 10),
@@ -245,7 +256,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 height: 18,
                                 child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                               )
-                                  : Text(_countdown > 0 ? "Gửi lại ($_countdown)" : "Nhận mã"),
+                                  : Text(_countdown > 0 ? loc.resendCode(_countdown) : loc.sendCode),
                             ),
                           ],
                         ),
@@ -254,8 +265,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         // Referral Code
                         _buildTextField(
                           controller: _referralController,
-                          hint: "Mã giới thiệu",
+                          hint: loc.referralCodeHint,
                           icon: Icons.card_giftcard,
+                        ),
+                        const SizedBox(height: 15),
+
+                        // Số Zalo (không bắt buộc)
+                        _buildTextField(
+                          controller: _zaloController,
+                          hint: loc.zaloHint,
+                          icon: Icons.phone_android,
+                          keyboardType: TextInputType.phone,
                         ),
                         const SizedBox(height: 15),
 
@@ -274,13 +294,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     MaterialPageRoute(builder: (_) => const TermsScreen()),
                                   );
                                 },
-                                child: const Text.rich(
+                                child: Text.rich(
                                   TextSpan(
-                                    text: "Tôi đồng ý với ",
+                                    text: loc.agreeTerms,
                                     children: [
                                       TextSpan(
-                                        text: "Điều khoản sử dụng",
-                                        style: TextStyle(
+                                        text: loc.termsOfUse,
+                                        style: const TextStyle(
                                           color: Colors.blue,
                                           decoration: TextDecoration.underline,
                                         ),
@@ -311,14 +331,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               height: 20,
                               child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                             )
-                                : const Text("Đăng ký", style: TextStyle(fontSize: 18)),
+                                : Text(loc.registerButton, style: const TextStyle(fontSize: 18)),
                           ),
                         ),
                         const SizedBox(height: 12),
 
                         TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: const Text("Đã có tài khoản? Đăng nhập"),
+                          child: Text(loc.alreadyAccount),
                         ),
                       ],
                     ),
@@ -376,9 +396,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
       validator: validator ??
               (v) {
-            if (v == null || v.isEmpty) return "Vui lòng nhập mật khẩu";
+            final loc = AppLocalizations.of(context)!;
+            if (v == null || v.isEmpty) return loc.enterPassword;
             if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$').hasMatch(v)) {
-              return "Mật khẩu ≥8 ký tự, gồm chữ hoa, chữ thường, số & ký tự đặc biệt";
+              // No dedicated message in arb for strong password - fall back to enterPassword
+              return loc.enterPassword;
             }
             return null;
           },

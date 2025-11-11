@@ -4,26 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:begulas_express/models/contructor_order_model.dart';
 import 'package:begulas_express/services/api_service.dart';
 import 'package:begulas_express/screens/Contructor/update_order_screen.dart';
+import '../../l10n/app_localizations.dart';
 
-const Map<int, String> statusLabels = {
-  1: 'Đang đến lấy hàng',
-  2: 'Đang trên đường đến kho trung chuyển',
-  3: 'Đã đến kho',
-  4: 'Chờ thanh toán',
-  5: 'Chờ gửi hàng',
-  6: 'Đang vận chuyển',
-  7: 'Giao hàng thành công',
-  8: 'Đã hủy',
-};
-
-const Map<int, String> statusOptions = {
-  3: 'Đã đến kho',
-  4: 'Chờ thanh toán',
-  5: 'Chờ gửi hàng',
-  6: 'Đang vận chuyển',
-  7: 'Giao hàng thành công',
-};
-
+// Use localization for status labels and tabs
 class OrderStatusScreen extends StatefulWidget {
   final VoidCallback? tabBarBack;
   const OrderStatusScreen({Key? key, this.tabBarBack}) : super(key: key);
@@ -41,41 +24,16 @@ class _OrderStatusScreenState extends State<OrderStatusScreen>
   final Map<int, List<Map<String, dynamic>>> updatedOrderItemsMap = {};
   late TabController _tabController;
 
-  final List<Map<String, dynamic>> statusTabs = [
-    {"id": 0, "name": "Tất cả"},
-    {"id": 1, "name": "Đang đến lấy hàng"},
-    {"id": 2, "name": "Đang trên đường đến kho"},
-    {"id": 3, "name": "Đã đến kho"},
-    {"id": 4, "name": "Chờ thanh toán"},
-    {"id": 5, "name": "Chờ gửi hàng"},
-    {"id": 6, "name": "Đang vận chuyển"},
-    {"id": 7, "name": "Giao thành công"},
-    {"id": 8, "name": "Đã hủy"},
-  ];
   int selectedStatus = 0;
-
-  // action labels for the green status button when visible
-  final Map<int, String> actionLabels = {
-    2: 'Đã đến kho',
-    5: 'Đang vận chuyển',
-    6: 'Giao hàng thành công',
-  };
-
-  // transitions for immediate status changes
-  final Map<int, int> transitions = {
-    2: 3,
-    5: 6,
-    6: 7,
-  };
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: statusTabs.length, vsync: this);
+    _tabController = TabController(length: 9, vsync: this);
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
         setState(() {
-          selectedStatus = statusTabs[_tabController.index]["id"];
+          selectedStatus = _tabController.index;
         });
       }
     });
@@ -125,17 +83,17 @@ class _OrderStatusScreenState extends State<OrderStatusScreen>
   }
 
   Future<void> _handleChangeStatus(int orderId, int newStatus) async {
+    final loc = AppLocalizations.of(context)!;
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString("accessToken");
       if (token == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Bạn chưa đăng nhập.")),
+          SnackBar(content: Text(loc.orderSnackSessionExpired)),
         );
         return;
       }
 
-      // If there are updated items cached for this order, send them first
       if (updatedOrderItemsMap.containsKey(orderId) &&
           (updatedOrderItemsMap[orderId]?.isNotEmpty ?? false)) {
         final itemsToSend = updatedOrderItemsMap[orderId]!;
@@ -148,24 +106,23 @@ class _OrderStatusScreenState extends State<OrderStatusScreen>
           final parsed = jsonDecode(updRes.body);
           if (parsed["success"] != true) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(parsed["message"] ?? "Cập nhật đơn hàng thất bại")),
+              SnackBar(content: Text(loc.orderSnackUpdateFailed)),
             );
             return;
           }
         } else if (updRes.statusCode == 401) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Phiên đăng nhập hết hạn.")),
+            SnackBar(content: Text(loc.orderSnackSessionExpired)),
           );
           return;
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Lỗi khi cập nhật đơn hàng: ${updRes.body}")),
+            SnackBar(content: Text("${loc.orderSnackUpdateFailed}: ${updRes.body}")),
           );
           return;
         }
       }
 
-      // Call change status API (PUT)
       final response = await ApiService.changeOrderStatus(
         accessToken: token,
         orderId: orderId,
@@ -177,37 +134,38 @@ class _OrderStatusScreenState extends State<OrderStatusScreen>
         if (data["success"] == true) {
           updatedOrderItemsMap.remove(orderId);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data["message"] ?? "Cập nhật trạng thái thành công")),
+            SnackBar(content: Text(loc.orderSnackUpdateSuccess)),
           );
           await fetchOrders();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data["message"] ?? "Không thể cập nhật trạng thái")),
+            SnackBar(content: Text(data["message"] ?? loc.orderSnackUpdateFailed)),
           );
         }
       } else if (response.statusCode == 401) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Phiên đăng nhập hết hạn.")),
+          SnackBar(content: Text(loc.orderSnackSessionExpired)),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Lỗi khi cập nhật trạng thái: ${response.body}")),
+          SnackBar(content: Text("${loc.orderSnackUpdateFailed}: ${response.body}")),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Lỗi cập nhật trạng thái: $e")),
+        SnackBar(content: Text("${loc.orderSnackUpdateFailed}: $e")),
       );
     }
   }
 
   Future<void> _handleUpdateOrderItems(ContructorOrderModel order) async {
+    final loc = AppLocalizations.of(context)!;
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString("accessToken");
       if (token == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Bạn chưa đăng nhập.")),
+          SnackBar(content: Text(loc.orderSnackSessionExpired)),
         );
         return;
       }
@@ -234,33 +192,31 @@ class _OrderStatusScreenState extends State<OrderStatusScreen>
         if (data["success"] == true) {
           updatedOrderItemsMap.remove(order.id);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data["message"] ?? "Cập nhật đơn hàng thành công")),
+            SnackBar(content: Text(loc.orderSnackUpdateSuccess)),
           );
           await fetchOrders();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data["message"] ?? "Cập nhật đơn hàng thất bại")),
+            SnackBar(content: Text(loc.orderSnackUpdateFailed)),
           );
         }
       } else if (response.statusCode == 401) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Phiên đăng nhập hết hạn.")),
+          SnackBar(content: Text(loc.orderSnackSessionExpired)),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Lỗi khi cập nhật đơn hàng: ${response.body}")),
+          SnackBar(content: Text("${loc.orderSnackUpdateFailed}: ${response.body}")),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Lỗi cập nhật đơn hàng: $e")),
+        SnackBar(content: Text("${loc.orderSnackUpdateFailed}: $e")),
       );
     }
   }
 
   Future<void> _openUpdateOrderScreen(ContructorOrderModel order) async {
-    // Open UpdateOrderScreen and wait for result.
-    // UpdateOrderScreen should call API20 by itself and pop with payload on success.
     final result = await Navigator.of(context).push<List<Map<String, dynamic>>>(
       MaterialPageRoute(
         builder: (_) => UpdateOrderScreen(order: order),
@@ -268,23 +224,48 @@ class _OrderStatusScreenState extends State<OrderStatusScreen>
     );
 
     if (result != null) {
-      // If UpdateOrderScreen returned a payload, it means the update was successful (API20).
-      // Immediately refresh the orders list so the UI reflects the server state.
       updatedOrderItemsMap[order.id] = result;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cập nhật chi tiết đơn hàng thành công. Đang cập nhật danh sách...')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.orderSnackUpdateSuccess)),
       );
-      await fetchOrders(); // <-- ensures list is refreshed right after returning
-      setState(() {}); // ensure UI updated (though fetchOrders calls setState)
+      await fetchOrders();
+      setState(() {});
     }
   }
 
   Widget buildOrderCard(ContructorOrderModel order) {
+    final loc = AppLocalizations.of(context)!;
     final s = order.status;
-    final statusStr = statusLabels[s] ?? 'Không xác định';
-    final showGreenAction = transitions.keys.contains(s); // only 2,5,6
-    final showUpdate = s == 3; // purple edit button remains for status 3
-    if (s == 7) return _buildOrderInfoOnly(order, statusStr);
+    final statusMap = [
+      loc.orderStatusTabAll,
+      loc.orderStatusTabPickup,
+      loc.orderStatusTabInTransit,
+      loc.orderStatusTabAtHub,
+      loc.orderStatusTabAwaitingPayment,
+      loc.orderStatusTabAwaitingShipment,
+      loc.orderStatusTabShipping,
+      loc.orderStatusTabDelivered,
+      loc.orderStatusTabCancelled,
+    ];
+    final statusStr = s >= 0 && s < statusMap.length ? statusMap[s] : 'Unknown';
+
+    final showGreenAction = {2, 5, 6}.contains(s);
+    final showUpdate = s == 3;
+    if (s == 7) return _buildOrderInfoOnly(order, statusStr, loc);
+
+    // Action labels for green status button
+    final actionLabels = {
+      2: loc.orderActionChangeStatus,
+      5: loc.orderActionChangeStatus,
+      6: loc.orderActionChangeStatus,
+    };
+
+    // Transitions for immediate status changes
+    final transitions = {
+      2: 3,
+      5: 6,
+      6: 7,
+    };
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
@@ -298,18 +279,17 @@ class _OrderStatusScreenState extends State<OrderStatusScreen>
               title: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Mã đơn hàng: ${order.orderCode}",
+                  Text("Order code: ${order.orderCode}",
                       style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis),
-                  Text("Người nhận: ${order.receiverName}"),
-                  Text("Trạng thái: $statusStr", style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(loc.orderReceiverLabel(order.receiverName)),
+                  Text(loc.orderStatusLabel(statusStr), style: const TextStyle(fontWeight: FontWeight.bold)),
                 ],
               ),
-              children: [_buildOrderDetails(order, statusStr)],
+              children: [_buildOrderDetails(order, statusStr, loc)],
             ),
             const Divider(height: 1),
-            // Green action button: only for statuses 2,5,6
             if (showGreenAction)
               Align(
                 alignment: Alignment.centerRight,
@@ -327,11 +307,10 @@ class _OrderStatusScreenState extends State<OrderStatusScreen>
                       await _handleChangeStatus(order.id, nextStatus);
                     },
                     icon: const Icon(Icons.swap_horiz, size: 16),
-                    label: Text(actionLabels[s] ?? "Đổi trạng thái", style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                    label: Text(actionLabels[s] ?? loc.orderActionChangeStatus, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
                   ),
                 ),
               ),
-            // Purple edit button stays for status 3 so contractor can edit details before sending
             if (showUpdate)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -343,7 +322,7 @@ class _OrderStatusScreenState extends State<OrderStatusScreen>
                   ),
                   onPressed: () => _openUpdateOrderScreen(order),
                   icon: const Icon(Icons.edit_note),
-                  label: const Text("Cập nhật đơn hàng", style: TextStyle(fontWeight: FontWeight.w500)),
+                  label: Text(loc.orderActionUpdateOrder, style: const TextStyle(fontWeight: FontWeight.w500)),
                 ),
               ),
           ],
@@ -352,7 +331,7 @@ class _OrderStatusScreenState extends State<OrderStatusScreen>
     );
   }
 
-  Widget _buildOrderInfoOnly(ContructorOrderModel o, String s) {
+  Widget _buildOrderInfoOnly(ContructorOrderModel o, String statusStr, AppLocalizations loc) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       elevation: 2,
@@ -360,40 +339,38 @@ class _OrderStatusScreenState extends State<OrderStatusScreen>
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Mã đơn hàng: ${o.orderCode}", style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400), maxLines: 1, overflow: TextOverflow.ellipsis),
-            Text("Người nhận: ${o.receiverName}"),
-            Text("Trạng thái: $s", style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text("Order code: ${o.orderCode}", style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400), maxLines: 1, overflow: TextOverflow.ellipsis),
+            Text(loc.orderReceiverLabel(o.receiverName)),
+            Text(loc.orderStatusLabel(statusStr), style: const TextStyle(fontWeight: FontWeight.bold)),
           ],
         ),
-        children: [_buildOrderDetails(o, s)],
+        children: [_buildOrderDetails(o, statusStr, loc)],
       ),
     );
   }
 
-  Widget _buildOrderDetails(ContructorOrderModel order, String statusStr) {
+  Widget _buildOrderDetails(ContructorOrderModel order, String statusStr, AppLocalizations loc) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Địa chỉ: ${order.receiverAddress}"),
-          Text("SĐT: ${order.receiverPhone}"),
-          Text("Trạng thái: $statusStr", style: const TextStyle(fontWeight: FontWeight.w500)),
-          Text("Đặt cọc: ${order.downPayment.toStringAsFixed(0)}"),
-          Text("Thanh toán số dư: ${order.payWithBalance.toStringAsFixed(0)}"),
-          Text("Ngày tạo: ${order.createDate.toString().substring(0, 19)}"),
+          Text(loc.orderAddressLabel(order.receiverAddress)),
+          Text(loc.orderPhoneLabel(order.receiverPhone)),
+          Text(loc.orderStatusLabel(statusStr), style: const TextStyle(fontWeight: FontWeight.w500)),
+          Text(loc.orderDownPaymentLabel(order.downPayment.toStringAsFixed(0))),
+          Text(loc.orderBalancePaymentLabel(order.payWithBalance.toStringAsFixed(0))),
+          Text(loc.orderCreatedDateLabel(order.createDate.toString().substring(0, 19))),
           const SizedBox(height: 8),
-          const Text("Danh sách hàng hóa:", style: TextStyle(fontWeight: FontWeight.bold)),
+          Text(loc.orderItemListLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
           ...order.items.map(
                 (item) => ListTile(
               dense: true,
               title: Text(item.name),
-              subtitle: Text("SL ước tính: ${item.weightEstimate} ${item.unit}${item.weightReal != null ? ' · Thực tế: ${item.weightReal}' : ''}"),
-              trailing: Text("Tiền: ${item.amount.toStringAsFixed(0)}"),
+              subtitle: Text("Estimated qty: ${item.weightEstimate} ${item.unit}${item.weightReal != null ? ' · Actual: ${item.weightReal}' : ''}"),
+              trailing: Text("Amount: ${item.amount.toStringAsFixed(0)}"),
             ),
           ),
-
-          // NEW: Hiển thị "Chi tiết đơn hàng sau cập nhật" nếu có dữ liệu sửa trong updatedOrderItemsMap
           if (updatedOrderItemsMap.containsKey(order.id) && (updatedOrderItemsMap[order.id]?.isNotEmpty ?? false))
             Padding(
               padding: const EdgeInsets.only(top: 12.0),
@@ -405,14 +382,11 @@ class _OrderStatusScreenState extends State<OrderStatusScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("Chi tiết sau cập nhật", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+                      Text(loc.orderUpdatedDetailsLabel, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
                       const SizedBox(height: 8),
-                      ..._buildUpdatedDetails(order),
+                      ..._buildUpdatedDetails(order, loc),
                       const SizedBox(height: 6),
-                      const Text(
-                        "Lưu ý: Đây là nội dung đã chỉnh trong màn hình 'Cập nhật đơn hàng' (chưa gửi nếu bạn chưa bấm nút hành động màu xanh).",
-                        style: TextStyle(fontSize: 12, color: Colors.black54),
-                      ),
+                      Text(loc.orderUpdatedNotice, style: const TextStyle(fontSize: 12, color: Colors.black54)),
                     ],
                   ),
                 ),
@@ -423,8 +397,7 @@ class _OrderStatusScreenState extends State<OrderStatusScreen>
     );
   }
 
-  // Tạo widget list hiển thị chi tiết đã chỉnh (so sánh với order.items nếu có)
-  List<Widget> _buildUpdatedDetails(ContructorOrderModel order) {
+  List<Widget> _buildUpdatedDetails(ContructorOrderModel order, AppLocalizations loc) {
     final updated = updatedOrderItemsMap[order.id] ?? [];
     final List<Widget> widgets = [];
 
@@ -436,11 +409,9 @@ class _OrderStatusScreenState extends State<OrderStatusScreen>
       final origIndex = order.items.indexWhere((it) => it.id == ptId);
       final orig = origIndex != -1 ? order.items[origIndex] : null;
 
-      // Prefer name/unit from payload, then original item, then fallback to id label
       final String title = (up['name'] != null && (up['name'] as String).trim().isNotEmpty)
           ? up['name'] as String
-          : (orig != null ? orig.name : 'Mã sản phẩm: $ptId');
-
+          : (orig != null ? orig.name : 'ID: $ptId');
       final String unit = (up['unit'] != null && (up['unit'] as String).trim().isNotEmpty)
           ? up['unit'] as String
           : (orig != null ? (orig.unit ?? '') : '');
@@ -458,10 +429,10 @@ class _OrderStatusScreenState extends State<OrderStatusScreen>
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text('SL: ${newWeight.toString()} ${unit}', style: const TextStyle(fontSize: 13)),
-                  Text('Giá: ${newPrice.toStringAsFixed(0)}', style: const TextStyle(fontSize: 13, color: Colors.green)),
+                  Text('Qty: ${newWeight.toString()} ${unit}', style: const TextStyle(fontSize: 13)),
+                  Text('Price: ${newPrice.toStringAsFixed(0)}', style: const TextStyle(fontSize: 13, color: Colors.green)),
                   if (orig != null)
-                    Text('Trước: SL ${oldWeight.toString()} · Giá ${oldPrice.toStringAsFixed(0)}', style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                    Text('Prev: Qty ${oldWeight.toString()} · Price ${oldPrice.toStringAsFixed(0)}', style: const TextStyle(fontSize: 12, color: Colors.black54)),
                 ],
               ),
             ],
@@ -474,36 +445,28 @@ class _OrderStatusScreenState extends State<OrderStatusScreen>
     return widgets;
   }
 
-  Widget buildStatusSelector(ContructorOrderModel order) {
-    final id = order.id;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 22),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: statusOptions.entries
-            .map(
-              (e) => ListTile(
-            title: Text(e.value),
-            onTap: () async {
-              Navigator.of(context).pop();
-              await _handleChangeStatus(id, e.key);
-            },
-          ),
-        )
-            .toList(),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final statusTabs = [
+      {"id": 0, "name": loc.orderStatusTabAll},
+      {"id": 1, "name": loc.orderStatusTabPickup},
+      {"id": 2, "name": loc.orderStatusTabInTransit},
+      {"id": 3, "name": loc.orderStatusTabAtHub},
+      {"id": 4, "name": loc.orderStatusTabAwaitingPayment},
+      {"id": 5, "name": loc.orderStatusTabAwaitingShipment},
+      {"id": 6, "name": loc.orderStatusTabShipping},
+      {"id": 7, "name": loc.orderStatusTabDelivered},
+      {"id": 8, "name": loc.orderStatusTabCancelled},
+    ];
+
     final filteredOrders = selectedStatus == 0 ? orders : orders.where((o) => o.status == selectedStatus).toList();
 
     return DefaultTabController(
       length: statusTabs.length,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Danh sách đơn hàng'),
+          title: Text(loc.orderStatusScreenTitle),
           backgroundColor: Colors.blue[400],
           leading: widget.tabBarBack != null ? IconButton(icon: const Icon(Icons.arrow_back), onPressed: widget.tabBarBack) : null,
           bottom: TabBar(
@@ -512,7 +475,7 @@ class _OrderStatusScreenState extends State<OrderStatusScreen>
             indicatorColor: Colors.orange,
             labelColor: Colors.orange,
             unselectedLabelColor: Colors.white,
-            tabs: statusTabs.map((s) => Tab(child: Text(s["name"], style: const TextStyle(fontSize: 13)))).toList(),
+            tabs: statusTabs.map((s) => Tab(child: Text(s["name"]?.toString() ?? '', style: const TextStyle(fontSize: 13)))).toList(),
           ),
         ),
         body: isLoading
@@ -520,7 +483,7 @@ class _OrderStatusScreenState extends State<OrderStatusScreen>
             : errorMessage != null
             ? Center(child: Text(errorMessage!))
             : filteredOrders.isEmpty
-            ? const Center(child: Text("Không có đơn hàng nào."))
+            ? Center(child: Text(loc.orderNoOrders ?? "No orders found."))
             : RefreshIndicator(
           onRefresh: fetchOrders,
           child: ListView.builder(

@@ -12,11 +12,13 @@ dependencies:
     sdk: flutter
   http: ^1.5.0
   shared_preferences: ^2.5.3
-  intl: ^0.18.1
+  intl: ^0.20.2
   provider: ^6.0.5
   qr_flutter: ^4.1.0
   cupertino_icons: ^1.0.8
   url_launcher: ^6.3.2
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:
@@ -26,5 +28,18 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
   assets:
     - lib/assets/icons/icons8-zalo-100.png
+    - lib/assets/icons/united-states.png
+    - lib/assets/icons/vietnam.png
+
+# Cấu hình l10n: phải cùng cấp với flutter, không thụt vào
+l10n:
+  arb-dir: lib/l10n
+  template-arb-file: app_en.arb
+  output-localization-file: app_localizations.dart
+  output-class: AppLocalizations
+  preferred-supported-locales:
+    - en
+    - vi

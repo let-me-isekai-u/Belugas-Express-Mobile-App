@@ -5,9 +5,12 @@ import '../services/api_service.dart';
 import '../screens/register_screen.dart';
 import '../screens/forgot_password_screen.dart';
 import '../screens/home_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final void Function(Locale)? onLocaleChange;
+
+  const LoginScreen({super.key, this.onLocaleChange});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -30,12 +33,20 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  void _toggleLanguage() {
+    final currentLocale = Localizations.localeOf(context);
+    final newLocale = currentLocale.languageCode == 'vi' ? const Locale('en') : const Locale('vi');
+    widget.onLocaleChange?.call(newLocale);
+  }
+
   Future<void> _login(BuildContext context) async {
+    final loc = AppLocalizations.of(context)!;
+
     String phone = phoneController.text.trim();
     String password = passwordController.text.trim();
 
     if (phone.isEmpty || password.isEmpty) {
-      _showSnackBar("Vui lòng nhập đầy đủ Số điện thoại và Mật khẩu", Colors.red);
+      _showSnackBar(loc.loginErrorEmpty, Colors.red);
       return;
     }
 
@@ -44,56 +55,42 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final response = await ApiService.login(phoneNumber: phone, password: password);
 
-      // 👉 In raw response
-      print("DEBUG RAW LOGIN RESPONSE: ${response.body}");
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
-        // 👉 In parsed response
-        print("DEBUG PARSED LOGIN RESPONSE: $data");
-
-        // Lấy id từ API
-        final int userId = data["id"] ?? 0;
-        print("DEBUG USER ID: $userId");
-
-        // Lưu token và thông tin user
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString("accessToken", data["accessToken"]);
         await prefs.setString("refreshToken", data["refreshToken"]);
         await prefs.setString("fullName", data["fullName"] ?? "");
         await prefs.setString("email", data["email"] ?? "");
         await prefs.setInt("role", data["role"] ?? 0);
-        await prefs.setInt("id", userId);
+        await prefs.setInt("id", data["id"] ?? 0);
 
-        _showSnackBar("Đăng nhập thành công", Colors.green);
+        _showSnackBar(loc.loginSuccess, Colors.green);
 
-        // Chuyển sang HomeScreen, truyền accessToken
-        // Điều hướng theo role
         final role = data["role"] ?? 1;
-
         if (role == 2) {
-          // Nhà thầu
           Navigator.pushReplacementNamed(context, "/contractorHome");
         } else {
-          // User
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (_) => HomeScreen(accessToken: data["accessToken"]),
+              builder: (_) => HomeScreen(
+                  accessToken: data["accessToken"],
+                  onLocaleChange: widget.onLocaleChange,
+              ),
             ),
           );
         }
-
       } else if (response.statusCode == 401) {
-        _showSnackBar("Sai số điện thoại hoặc mật khẩu", Colors.red);
+        _showSnackBar(loc.loginErrorWrong, Colors.red);
       } else if (response.statusCode == 404) {
-        _showSnackBar("Tài khoản đã bị khóa, không thể đăng nhập", Colors.red);
+        _showSnackBar(loc.loginErrorLocked, Colors.red);
       } else {
-        _showSnackBar("Có lỗi xảy ra, vui lòng thử lại", Colors.red);
+        _showSnackBar(loc.loginErrorOther, Colors.red);
       }
     } catch (e) {
-      _showSnackBar("Lỗi kết nối: $e", Colors.red);
+      _showSnackBar("${loc.loginErrorOther}: $e", Colors.red);
     } finally {
       setState(() => _isLoading = false);
     }
@@ -101,6 +98,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: Colors.blue[700],
       body: SafeArea(
@@ -110,22 +109,55 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // Nút đổi ngôn ngữ
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: _toggleLanguage,
+                      child: Row(
+                        children: [
+                          Image.asset(
+                            Localizations.localeOf(context).languageCode == 'vi'
+                                ? 'lib/assets/icons/vietnam.png'
+                                : 'lib/assets/icons/united-states.png',
+                            width: 38,
+                            height: 38,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            Localizations.localeOf(context).languageCode == 'vi' ? 'VI' : 'EN',
+                            style: const TextStyle(
+                              fontSize: 23,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
                 const Icon(Icons.local_shipping, size: 80, color: Colors.white),
                 const SizedBox(height: 12),
-                const Text(
-                  "Beluga Express",
-                  style: TextStyle(
+
+                Text(
+                  loc.appTitle,
+                  style: const TextStyle(
                     fontFamily: 'Serif',
                     color: Colors.white,
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+
                 const SizedBox(height: 40),
-                _buildTextField(phoneController, "Số điện thoại", Icons.phone, false),
+                _buildTextField(phoneController, loc.phone, Icons.phone, false),
                 const SizedBox(height: 16),
-                _buildTextField(passwordController, "Mật khẩu", Icons.lock, true),
+                _buildTextField(passwordController, loc.password, Icons.lock, true),
                 const SizedBox(height: 20),
+
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.lightBlue[300],
@@ -140,9 +172,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                   )
-                      : const Text("Đăng nhập"),
+                      : Text(loc.login),
                 ),
+
                 const SizedBox(height: 16),
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -153,16 +187,18 @@ class _LoginScreenState extends State<LoginScreen> {
                           MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
                         );
                       },
-                      child: const Text("Quên mật khẩu", style: TextStyle(color: Colors.white)),
+                      child: Text(loc.forgotPassword, style: const TextStyle(color: Colors.white)),
                     ),
                     TextButton(
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => RegisterScreen(onLocaleChange: widget.onLocaleChange),
+                          ),
                         );
                       },
-                      child: const Text("Đăng ký", style: TextStyle(color: Colors.white)),
+                      child: Text(loc.register, style: const TextStyle(color: Colors.white)),
                     ),
                   ],
                 ),

@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'login_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
-  final String email; // nhận email từ ForgotPasswordScreen
+  final String email;
 
   const ChangePasswordScreen({super.key, required this.email});
 
@@ -20,7 +21,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   bool _obscureConfirm = true;
   bool _isLoading = false;
 
-  // lưu lỗi để hiện custom
   String? _passwordError;
   String? _confirmError;
 
@@ -35,7 +35,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     );
   }
 
-  Future<void> _onConfirm() async {
+  Future<void> _onConfirm(AppLocalizations loc) async {
     final pass = passwordController.text.trim();
     final confirm = confirmController.text.trim();
 
@@ -45,20 +45,19 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     });
 
     if (pass.isEmpty) {
-      setState(() => _passwordError = "Vui lòng nhập mật khẩu mới");
+      setState(() => _passwordError = loc.changePasswordErrorEmpty);
       return;
     }
     if (pass.length < 8) {
-      setState(() => _passwordError =
-      "Mật khẩu phải ≥ 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt");
+      setState(() => _passwordError = loc.changePasswordErrorWeak);
       return;
     }
     if (confirm.isEmpty) {
-      setState(() => _confirmError = "Vui lòng nhập lại mật khẩu");
+      setState(() => _confirmError = loc.changePasswordErrorConfirmEmpty);
       return;
     }
     if (pass != confirm) {
-      setState(() => _confirmError = "Mật khẩu xác nhận không khớp");
+      setState(() => _confirmError = loc.changePasswordErrorNotMatch);
       return;
     }
 
@@ -71,8 +70,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       );
 
       if (response.statusCode == 200) {
-        _showSnackBar("Đổi mật khẩu thành công!", Colors.green);
-
+        _showSnackBar(loc.changePasswordSuccess, Colors.green);
         Future.delayed(const Duration(seconds: 2), () {
           Navigator.pushAndRemoveUntil(
             context,
@@ -81,13 +79,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           );
         });
       } else if (response.statusCode == 400) {
-        _showSnackBar("Tài khoản email này chưa được đăng ký!", Colors.red);
+        _showSnackBar(loc.changePasswordEmailNotRegistered, Colors.red);
       } else {
         final error = response.body.isNotEmpty ? jsonDecode(response.body) : {};
-        _showSnackBar(error["message"] ?? "Đổi mật khẩu thất bại!", Colors.red);
+        _showSnackBar(error["message"] ?? loc.changePasswordFailed, Colors.red);
       }
     } catch (e) {
-      _showSnackBar("Lỗi kết nối: $e", Colors.red);
+      _showSnackBar(loc.changePasswordConnectionError("$e"), Colors.red);
     } finally {
       setState(() => _isLoading = false);
     }
@@ -95,6 +93,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.blue[700],
       body: SafeArea(
@@ -105,9 +104,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               children: [
                 const Icon(Icons.lock, size: 80, color: Colors.white),
                 const SizedBox(height: 12),
-                const Text(
-                  "Đổi mật khẩu",
-                  style: TextStyle(
+                Text(
+                  loc.changePasswordTitle,
+                  style: const TextStyle(
                     fontFamily: 'Serif',
                     color: Colors.white,
                     fontSize: 30,
@@ -115,33 +114,30 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   ),
                 ),
                 const SizedBox(height: 30),
-
-                // Mật khẩu mới
+                // New password field
                 _buildPasswordField(
                   controller: passwordController,
-                  hint: "Mật khẩu mới",
+                  hint: loc.changePasswordNew,
                   obscureText: _obscurePass,
                   onToggle: () => setState(() => _obscurePass = !_obscurePass),
                   errorText: _passwordError,
                 ),
                 const SizedBox(height: 20),
-
-                // Xác nhận mật khẩu
+                // Confirm password field
                 _buildPasswordField(
                   controller: confirmController,
-                  hint: "Xác nhận mật khẩu",
+                  hint: loc.changePasswordConfirm,
                   obscureText: _obscureConfirm,
                   onToggle: () =>
                       setState(() => _obscureConfirm = !_obscureConfirm),
                   errorText: _confirmError,
                 ),
                 const SizedBox(height: 25),
-
-                // Nút xác nhận
+                // Confirm button
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _isLoading ? null : _onConfirm,
+                    onPressed: _isLoading ? null : () => _onConfirm(loc),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue[400],
                       padding: const EdgeInsets.symmetric(vertical: 15),
@@ -159,10 +155,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         color: Colors.white,
                       ),
                     )
-                        : const Text(
-                      "Xác nhận",
+                        : Text(
+                      loc.againConfirmPasswordButton,
                       style:
-                      TextStyle(fontSize: 18, color: Colors.white),
+                      const TextStyle(fontSize: 18, color: Colors.white),
                     ),
                   ),
                 ),
@@ -175,9 +171,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       MaterialPageRoute(builder: (_) => LoginScreen()),
                     );
                   },
-                  child: const Text(
-                    "Quay về đăng nhập",
-                    style: TextStyle(
+                  child: Text(
+                    loc.changePasswordBackLogin,
+                    style: const TextStyle(
                         color: Colors.black, fontWeight: FontWeight.bold),
                   ),
                 ),

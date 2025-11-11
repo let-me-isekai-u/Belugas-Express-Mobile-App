@@ -29,6 +29,7 @@ class RegisterModel {
   /// [password] - Mật khẩu
   /// [fullName] - Họ tên
   /// [phoneNumber] - Số điện thoại
+  /// [phoneZalo] - Số Zalo (bắt buộc hoặc theo yêu cầu backend)
   /// [code] - Mã OTP (bắt buộc)
   /// [referredByCode] - Mã giới thiệu (không bắt buộc)
   ///
@@ -38,6 +39,7 @@ class RegisterModel {
     required String password,
     required String fullName,
     required String phoneNumber,
+    required String phoneZalo,
     required String code,
     String? referredByCode,
   }) async {
@@ -47,6 +49,7 @@ class RegisterModel {
         password: password,
         fullName: fullName,
         phoneNumber: phoneNumber,
+        phoneZalo: phoneZalo,
         code: code,
         referredByCode: referredByCode,
       );

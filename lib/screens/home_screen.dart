@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../models/home_model.dart';
 import '../screens/create_order_screen.dart';
 import '../screens/order_screen.dart';
@@ -10,7 +11,14 @@ import '../route_observer.dart';
 
 class HomeScreen extends StatefulWidget {
   final String accessToken;
-  const HomeScreen({Key? key, required this.accessToken}) : super(key: key);
+  final void Function(Locale)? onLocaleChange;
+
+
+  const HomeScreen(
+      {Key? key,
+        required this.accessToken,
+        this.onLocaleChange})
+      : super(key: key);
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -20,15 +28,15 @@ class _HomeScreenState extends State<HomeScreen>
     with TickerProviderStateMixin, RouteAware {
   int _selectedIndex = 0;
   double _opacity = 0.0;
+  Locale _locale = const Locale('vi');
 
   @override
   void initState() {
     super.initState();
-    // Load profile (keeps previous behavior)
     Future.microtask(() {
       Provider.of<HomeModel>(context, listen: false).loadProfile(context);
-      // Ensure wallet is refreshed right after entering Home (e.g. just after login)
-      Provider.of<HomeModel>(context, listen: false).fetchWallet(context: context);
+      Provider.of<HomeModel>(context, listen: false)
+          .fetchWallet(context: context);
     });
     _runFadeIn();
   }
@@ -48,12 +56,11 @@ class _HomeScreenState extends State<HomeScreen>
     super.dispose();
   }
 
-  // Called when returning to this route (another route was popped)
   @override
   void didPopNext() {
-    // Refresh profile and wallet whenever user comes back to Home
     Provider.of<HomeModel>(context, listen: false).loadProfile(context);
-    Provider.of<HomeModel>(context, listen: false).fetchWallet(context: context);
+    Provider.of<HomeModel>(context, listen: false)
+        .fetchWallet(context: context);
   }
 
   void _runFadeIn() {
@@ -76,18 +83,20 @@ class _HomeScreenState extends State<HomeScreen>
       if (index == 0) {
         _runFadeIn();
         Provider.of<HomeModel>(context, listen: false).loadProfile(context);
-        // Refresh wallet when user taps Home tab
-        Provider.of<HomeModel>(context, listen: false).fetchWallet(context: context);
+        Provider.of<HomeModel>(context, listen: false)
+            .fetchWallet(context: context);
       }
     });
   }
 
-  Widget _buildBody(HomeModel model) {
+
+
+  Widget _buildBody(HomeModel model, AppLocalizations loc) {
     if (_selectedIndex == 0) {
       return Column(
         children: [
-          _buildCustomAppBar(model),
-          Expanded(child: _buildWelcome()),
+          _buildCustomAppBar(model, loc),
+          Expanded(child: _buildWelcome(loc)),
         ],
       );
     }
@@ -98,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen>
         return FadeTransition(opacity: animation, child: child);
       },
       child: _selectedIndex == 1
-          ? RechargeScreen(accessToken: widget.accessToken) // màn hình nạp tiền
+          ? RechargeScreen(accessToken: widget.accessToken)
           : _selectedIndex == 2
           ? const CreateOrderScreen()
           : _selectedIndex == 3
@@ -107,19 +116,29 @@ class _HomeScreenState extends State<HomeScreen>
           ? TradeScreen(accessToken: widget.accessToken)
           : _selectedIndex == 5
           ? (model.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ProfileScreen(
-        fullName: model.fullName ?? "Tên tài khoản",
-        email: model.email ?? "N/A",
-        phoneNumber: model.phoneNumber ?? "N/A",
+          ? const Center(
+        child: CircularProgressIndicator(),
+      )
+          : Builder(
+        builder: (context) => ProfileScreen(
+          key: ValueKey(Localizations.localeOf(context)),
+          fullName: model.fullName ?? loc.defaultUserName,
+          email: model.email ?? "N/A",
+          phoneNumber: model.phoneNumber ?? "N/A",
+          onLocaleChange: (locale) {
+            widget.onLocaleChange?.call(locale);
+
+          },
+        ),
       ))
           : const SizedBox.shrink(),
     );
+
   }
 
-  Widget _buildCustomAppBar(HomeModel model) {
+  Widget _buildCustomAppBar(HomeModel model, AppLocalizations loc) {
     return Container(
-      width: double.infinity, // Kéo ngang hết màn hình
+      width: double.infinity,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [Color(0xFF2196F3), Color(0xFF64B5F6)],
@@ -128,43 +147,52 @@ class _HomeScreenState extends State<HomeScreen>
         ),
       ),
       padding: const EdgeInsets.only(left: 16, right: 16, top: 40, bottom: 16),
-      child: Align(
-        alignment: Alignment.centerLeft, // Căn hết về bên trái
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            model.isLoading
-                ? const SizedBox(
-              height: 28,
-              child: LinearProgressIndicator(color: Colors.white),
-            )
-                : Text(
-              model.fullName ?? "Tên tài khoản",
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 4),
-            if (!model.isLoading)
-              Text(
-                model.wallet != null
-                    ? "Ví: ${model.wallet!.toStringAsFixed(0)} VND"
-                    : "Ví: N/A",
-                style: const TextStyle(
-                  fontSize: 15,
-                  color: Colors.white70,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                model.isLoading
+                    ? const SizedBox(
+                  height: 28,
+                  child: LinearProgressIndicator(color: Colors.white),
+                )
+                    : Text(
+                  model.fullName ?? loc.defaultUserName,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-          ],
-        ),
+                const SizedBox(height: 4),
+                if (!model.isLoading)
+                  Text(
+                    model.wallet != null
+                        ? loc.walletLabel(model.wallet!.toStringAsFixed(0))
+                        : loc.walletLabel('N/A'),
+
+                    style: const TextStyle(
+                      fontSize: 15,
+                      color: Colors.white70,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          // IconButton(
+          //   onPressed: _toggleLanguage,
+          //   icon: const Icon(Icons.language, color: Colors.white),
+          // ),
+        ],
       ),
     );
   }
 
-  Widget _buildWelcome() {
+  Widget _buildWelcome(AppLocalizations loc) {
     return Center(
       key: const ValueKey('welcome'),
       child: AnimatedOpacity(
@@ -190,7 +218,7 @@ class _HomeScreenState extends State<HomeScreen>
               Icon(Icons.local_shipping, size: 60, color: Colors.blue[400]),
               const SizedBox(height: 20),
               Text(
-                "Welcome to",
+                loc.welcomeTitle,
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w500,
@@ -200,7 +228,7 @@ class _HomeScreenState extends State<HomeScreen>
               ),
               const SizedBox(height: 10),
               Text(
-                "Beluga Express",
+                loc.welcomeAppName,
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
@@ -212,7 +240,7 @@ class _HomeScreenState extends State<HomeScreen>
               ),
               const SizedBox(height: 16),
               Text(
-                "Chào mừng bạn đã đến với ứng dụng giao nhận quốc tế Beluga Express.",
+                loc.welcomeMessage,
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.grey[700],
@@ -226,17 +254,19 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  List<Map<String, dynamic>> get _tabs => [
-    {'icon': Icons.home, 'label': 'Trang chủ'},
-    {'icon': Icons.account_balance_wallet, 'label': 'Nạp tiền'},
-    {'icon': Icons.add_circle, 'label': 'Tạo đơn'},
-    {'icon': Icons.list_alt, 'label': 'Đơn hàng'},
-    {'icon': Icons.receipt_long, 'label': 'Giao dịch'},
-    {'icon': Icons.person, 'label': 'Tài khoản'},
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
+    final tabs = [
+      {'icon': Icons.home, 'label': loc.homeTabHome},
+      {'icon': Icons.account_balance_wallet, 'label': loc.homeTabRecharge},
+      {'icon': Icons.add_circle, 'label': loc.homeTabCreateOrder},
+      {'icon': Icons.list_alt, 'label': loc.homeTabOrders},
+      {'icon': Icons.receipt_long, 'label': loc.homeTabTrade},
+      {'icon': Icons.person, 'label': loc.homeTabProfile},
+    ];
+
     return Consumer<HomeModel>(
       builder: (context, model, _) {
         return Container(
@@ -249,9 +279,8 @@ class _HomeScreenState extends State<HomeScreen>
           ),
           child: Scaffold(
             backgroundColor: Colors.transparent,
-            // Ẩn AppBar mặc định, chỉ dùng AppBar custom ở Home tab
             appBar: null,
-            body: _buildBody(model),
+            body: _buildBody(model, loc),
             bottomNavigationBar: Container(
               decoration: BoxDecoration(
                 color: Colors.blue[300],
@@ -283,12 +312,13 @@ class _HomeScreenState extends State<HomeScreen>
                 const TextStyle(fontWeight: FontWeight.bold),
                 unselectedLabelStyle:
                 const TextStyle(fontWeight: FontWeight.w400),
-                items: _tabs
+                items: tabs
                     .map((tab) => BottomNavigationBarItem(
-                  icon: Icon(tab['icon']),
-                  label: tab['label'],
+                  icon: Icon(tab['icon'] as IconData),
+                  label: tab['label'] as String,
                 ))
                     .toList(),
+
               ),
             ),
           ),

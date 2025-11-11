@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
-import 'login_screen.dart';
 import 'change_password_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../l10n/app_localizations.dart';
 
 class ProfileScreen extends StatelessWidget {
   final String fullName;
   final String email;
   final String phoneNumber;
+  final void Function(Locale)? onLocaleChange; // thêm callback đổi ngôn ngữ
 
   const ProfileScreen({
     super.key,
     required this.fullName,
     required this.email,
     required this.phoneNumber,
+    this.onLocaleChange,
   });
 
   // 🆕 Hàm mở Zalo
   Future<void> _openZalo() async {
-    final Uri zaloUrl = Uri.parse('https://zalo.me/0932265471'); //  thay số Zalo nếu cần
+    final Uri zaloUrl = Uri.parse('https://zalo.me/0932265471');
     if (await canLaunchUrl(zaloUrl)) {
       await launchUrl(zaloUrl, mode: LaunchMode.externalApplication);
     }
@@ -42,20 +44,36 @@ class ProfileScreen extends StatelessWidget {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
 
-    Navigator.pushAndRemoveUntil(
+    Navigator.pushNamedAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (_) => LoginScreen()),
+      '/login',
           (route) => false,
     );
   }
 
+  void _toggleLanguage(BuildContext context) {
+    final currentLocale = Localizations.localeOf(context);
+    final newLocale = currentLocale.languageCode == 'vi' ? const Locale('en') : const Locale('vi');
+    onLocaleChange?.call(newLocale);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         backgroundColor: Colors.blue[300],
-        title: const Text("Trang cá nhân", style: TextStyle(fontFamily: 'Serif')),
+        title: Text(loc.profileTitle, style: const TextStyle(fontFamily: 'Serif')),
+        actions: [
+          IconButton(
+            onPressed: () => _toggleLanguage(context),
+            icon: const Icon(Icons.language, color: Colors.white, size: 30, weight: 20, textDirection: TextDirection.ltr,),
+
+            tooltip: loc.changeLanguage ?? 'Change Language',
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -69,9 +87,9 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Thông tin cá nhân
-            _buildInfoTile("Họ tên", fullName, Icons.badge),
-            _buildInfoTile("Email", email, Icons.email),
-            _buildInfoTile("Số điện thoại", phoneNumber, Icons.phone),
+            _buildInfoTile(loc.profileName, fullName, Icons.badge),
+            _buildInfoTile(loc.profileEmail, email, Icons.email),
+            _buildInfoTile(loc.profilePhone, phoneNumber, Icons.phone),
 
             const SizedBox(height: 10),
 
@@ -108,8 +126,7 @@ class ProfileScreen extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange[400],
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       onPressed: () {
                         Navigator.push(
@@ -119,8 +136,8 @@ class ProfileScreen extends StatelessWidget {
                         );
                       },
                       icon: const Icon(Icons.lock),
-                      label: const Text("Đổi mật khẩu",
-                          style: TextStyle(fontSize: 16, fontFamily: 'Serif')),
+                      label: Text(loc.changePasswordButton,
+                          style: const TextStyle(fontSize: 16, fontFamily: 'Serif')),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -130,13 +147,12 @@ class ProfileScreen extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red[400],
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       onPressed: () => _logout(context),
                       icon: const Icon(Icons.logout),
-                      label: const Text("Đăng xuất",
-                          style: TextStyle(fontSize: 16, fontFamily: 'Serif')),
+                      label: Text(loc.logoutButton,
+                          style: const TextStyle(fontSize: 16, fontFamily: 'Serif')),
                     ),
                   ),
                 ],

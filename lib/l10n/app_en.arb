@@ -1,0 +1,369 @@
+    {
+      "@@locale": "en",
+      "appTitle": "Beluga Express",
+      "phone": "Phone number",
+      "password": "Password",
+      "login": "Login",
+      "forgotPassword": "Forgot password",
+      "register": "Register",
+      "loginErrorEmpty": "Please enter both Phone number and Password",
+      "loginSuccess": "Login successful",
+      "loginErrorWrong": "Wrong phone number or password",
+      "loginErrorLocked": "Account is locked, cannot login",
+      "loginErrorOther": "An error occurred, please try again",
+
+      "registerTitle": "Beluga Express",
+      "nameHint": "Name",
+      "emailHint": "Email",
+      "passwordHint": "Password",
+      "confirmPasswordHint": "Confirm password",
+      "phoneHint": "Phone number",
+      "verificationCodeHint": "Verification code",
+      "sendCode": "Send code",
+      "resendCode": "Resend ({count})",
+      "referralCodeHint": "Referral code",
+      "zaloHint": "Zalo number (optional)",
+      "agreeTerms": "I agree to ",
+      "termsOfUse": "Terms of use",
+      "registerButton": "Register",
+      "alreadyAccount": "Already have an account? Login",
+      "enterName": "Please enter your name",
+      "enterEmail": "Please enter your email",
+      "invalidEmail": "Invalid email",
+      "enterPassword": "Please enter password",
+      "passwordMismatch": "Passwords do not match",
+      "enterPhone": "Please enter phone number",
+      "invalidPhone": "Invalid phone number",
+      "enterVerificationCode": "Enter verification code",
+      "agreeTermsWarning": "You must agree to the terms of use",
+      "sendCodeSuccess": "Verification code sent to email!",
+      "sendCodeError": "Failed to send code!",
+      "sendCodeError500": "Error sending email, please try again",
+      "connectionError": "Connection error: {error}",
+
+      "forgotPasswordTitle": "Forgot Password",
+      "enterEmailLabel": "Email",
+      "enterEmailHint": "Enter your email",
+      "enterCodeLabel": "Verification code",
+      "enterCodeHint": "Enter the verification code sent to your email",
+      "sendVerificationCodeButton": "Send code",
+      "resendVerificationCodeButton": "Resend ({seconds}s)",
+      "verifyCodeButton": "Verify",
+      "backToLogin": "Back to login",
+      "emailEmptyError": "Please enter your email",
+      "codeEmptyError": "Please enter verification code",
+      "sendCodeSuccessMessage": "Verification code has been sent to your email!",
+      "sendCodeFailedMessage": "Cannot send verification code!",
+      "codeInvalidMessage": "Verification code is invalid!",
+      "verificationSuccessMessage": "Verification successful!",
+
+      "defaultUserName": "User",
+      "homeTabHome": "Home",
+      "homeTabRecharge": "Recharge",
+      "homeTabCreateOrder": "Create Order",
+      "homeTabOrders": "Orders",
+      "homeTabTrade": "Trade",
+      "homeTabProfile": "Profile",
+      "welcomeTitle": "Welcome to",
+      "welcomeAppName": "Beluga Express",
+      "welcomeMessage": "Welcome to the Beluga Express international delivery app.",
+      "walletLabel": "Wallet: {amount} VND",
+      "@walletLabel": {
+        "description": "User wallet label",
+        "placeholders": {
+          "amount": {}
+        }
+      },
+
+      "profileTitle": "Profile",
+      "profileName": "Full name",
+      "profileEmail": "Email",
+      "profilePhone": "Phone number",
+      "changePasswordButton": "Change password",
+      "logoutButton": "Logout",
+      "changeLanguage": "Thay đổi ngôn ngữ",
+      "rechargeTitle": "Recharge Wallet",
+      "rechargeAmountHint": "Enter amount to recharge",
+      "rechargeMinAmountError": "Minimum recharge amount is 50,000 VND",
+      "rechargeUserIdError": "Cannot get user ID.",
+      "rechargeQRCodeTitle": "Scan QR to pay",
+      "rechargeQRCodeAmount": "Amount: {amount} VND",
+      "@rechargeQRCodeAmount": {
+        "description": "Label for recharge amount in QR dialog",
+        "placeholders": { "amount": {} }
+      },
+      "rechargeQRCodeContent": "Content: {content}",
+      "@rechargeQRCodeContent": {
+        "description": "Content info in QR dialog",
+        "placeholders": { "content": {} }
+      },
+      "rechargeQRCodeCountdown": "Time left: {minutes}:{seconds}",
+      "@rechargeQRCodeCountdown": {
+        "description": "Countdown timer in QR dialog",
+        "placeholders": { "minutes": {}, "seconds": {} }
+      },
+      "rechargeQRCodeCloseButton": "Close QR",
+      "rechargeSuccess": "Recharge successful!",
+      "rechargeTimeout": "⛔ Payment time expired!",
+
+      "tradeTitle": "Transaction History",
+      "tradeNoTransactions": "No transactions yet",
+      "tradeAmountLabel": "Amount",
+      "tradePaymentForLabel": "Payment for",
+      "tradePaymentDateLabel": "Payment date",
+
+      "orderTitle": "Order List",
+      "orderNoOrders": "No orders available",
+      "orderStatusAll": "All",
+      "orderStatusPickup": "Waiting for pickup",
+      "orderStatusInTransitToHub": "En route to hub",
+      "orderStatusAtHub": "Arrived at hub",
+      "orderStatusAwaitingPayment": "Awaiting payment",
+      "orderStatusAwaitingShipment": "Waiting to ship",
+      "orderStatusShipping": "Shipping",
+      "orderStatusDelivered": "Delivered",
+      "orderStatusCancelled": "Cancelled",
+
+      "orderCodeLabel": "Order code: {code}",
+      "@orderCodeLabel": {
+        "description": "Label for order code",
+        "placeholders": { "code": {} }
+      },
+      "orderSenderLabel": "Sender: {name} ({phone})",
+      "@orderSenderLabel": {
+        "description": "Label for sender info",
+        "placeholders": { "name": {}, "phone": {} }
+      },
+      "orderReceiverLabel": "Receiver: {name}",
+      "@orderReceiverLabel": {
+        "description": "Label for receiver name",
+        "placeholders": { "name": {} }
+      },
+      "orderAddressLabel": "Address: {address}",
+      "@orderAddressLabel": {
+        "description": "Label for receiver address",
+        "placeholders": { "address": {} }
+      },
+
+      "orderTotalLabel": "Total: {amount}",
+      "@orderTotalLabel": {
+        "description": "Total order amount",
+        "placeholders": { "amount": {} }
+      },
+      "orderDownPaymentLabel": "Deposit: {amount}",
+      "@orderDownPaymentLabel": {
+        "description": "Order down payment label",
+        "placeholders": { "amount": {} }
+      },
+
+      "orderPaymentButton": "Pay {amount}",
+      "@orderPaymentButton": {
+        "description": "Button to pay order using wallet",
+        "placeholders": { "amount": {} }
+      },
+      "orderDialogTitle": "Order",
+      "orderInsufficientWallet": "Wallet balance is not enough. Please recharge.",
+      "orderExpiredSession": "Session expired. Please login again.",
+      "orderPaymentSuccess": "Payment successful",
+      "orderQrTitle": "Scan QR to pay",
+      "orderQrAmount": "Amount: {amount}",
+      "@orderQrAmount": {
+        "description": "Amount in QR dialog",
+        "placeholders": { "amount": {} }
+      },
+      "orderQrContent": "Content: {content}",
+      "@orderQrContent": {
+        "description": "Content in QR dialog",
+        "placeholders": { "content": {} }
+      },
+      "orderQrCloseButton": "Close QR",
+      "orderStatusDetailButton": "Status details",
+
+      "createOrderTitle": "Create Order",
+      "createOrderSenderSection": "Sender Information",
+      "createOrderReceiverSection": "Receiver Information",
+      "createOrderItemsSection": "Order Items",
+
+      "createOrderSenderPhone": "Sender Phone",
+      "createOrderSenderName": "Sender Name",
+      "createOrderSenderAddress": "Pickup Address",
+      "createOrderReceiverPhone": "Receiver Phone",
+      "createOrderReceiverName": "Receiver Name",
+      "createOrderReceiverAddress": "Receiver Address",
+      "createOrderReceiverCountry": "Destination Country",
+
+      "createOrderItemType": "Item Type",
+      "createOrderItemWeight": "Weight ({unit})",
+      "createOrderItemRemove": "Remove item",
+      "createOrderAddItem": "Add Item",
+      "createOrderConfirmButton": "Confirm Order",
+
+      "createOrderErrorEmptyField": "Please check all required fields!",
+      "createOrderErrorCountry": "Please select a country!",
+      "createOrderErrorInvalidWeight": "Please enter valid quantity for each item!",
+      "createOrderErrorNoItems": "Order must have at least one item!",
+      "createOrderErrorWalletFetch": "Error fetching wallet balance: {code}",
+      "@createOrderErrorWalletFetch": {
+        "description": "Error fetching wallet balance",
+        "placeholders": { "code": {} }
+      },
+
+      "confirmOrderTitle": "Confirm Order",
+      "confirmOrderSenderSection": "Sender Information",
+      "confirmOrderReceiverSection": "Receiver Information",
+      "confirmOrderItemsSection": "Order Items",
+      "confirmOrderWalletBalance": "Current wallet balance: {balance} VND",
+      "@confirmOrderWalletBalance": {
+        "description": "Current wallet balance",
+        "placeholders": { "balance": {} }
+      },
+      "confirmOrderDepositButton": "Confirm deposit 500,000 VND",
+      "confirmOrderDialogTitle": "Notification",
+      "confirmOrderDialogFetchError": "Cannot fetch wallet balance.",
+      "confirmOrderDialogInsufficientWallet": "Insufficient wallet balance to create order. Please top up.",
+      "confirmOrderDialogCreateSuccess": "Order created successfully! Code: {code}",
+      "@confirmOrderDialogCreateSuccess": {
+        "description": "Order created success",
+        "placeholders": { "code": {} }
+      },
+      "confirmOrderDialogCreateFailed": "Order creation failed!",
+      "confirmOrderDialogSessionExpired": "Session expired. Please login again.",
+      "confirmOrderDialogUnknownError": "Unknown error. Code: {code}",
+      "@confirmOrderDialogUnknownError": {
+        "description": "Unknown error",
+        "placeholders": { "code": {} }
+      },
+
+      "changePasswordTitle": "Change Password",
+      "changePasswordNew": "New Password",
+      "changePasswordConfirm": "Confirm Password",
+      "againConfirmPasswordButton": "Confirm",
+      "changePasswordBackLogin": "Back to Login",
+      "changePasswordErrorEmpty": "Please enter a new password",
+      "changePasswordErrorWeak": "Password must be ≥8 chars, include upper, lower, number, special",
+      "changePasswordErrorConfirmEmpty": "Please confirm password",
+      "changePasswordErrorNotMatch": "Password confirmation does not match",
+      "changePasswordSuccess": "Password changed successfully!",
+      "changePasswordEmailNotRegistered": "This email is not registered!",
+      "changePasswordFailed": "Password change failed!",
+      "changePasswordConnectionError": "Connection error: {error}",
+      "@changePasswordConnectionError": {
+        "description": "Connection error",
+        "placeholders": { "error": {} }
+      },
+
+
+      "orderStatusScreenTitle": "Order List",
+      "orderStatusTabAll": "All",
+      "orderStatusTabPickup": "Waiting for pickup",
+      "orderStatusTabInTransit": "En route to hub",
+      "orderStatusTabAtHub": "Arrived at hub",
+      "orderStatusTabAwaitingPayment": "Awaiting payment",
+      "orderStatusTabAwaitingShipment": "Waiting to ship",
+      "orderStatusTabShipping": "Shipping",
+      "orderStatusTabDelivered": "Delivered",
+      "orderStatusTabCancelled": "Cancelled",
+
+      "orderStatusLabel": "Status: {status}",
+      "@orderStatusLabel": {
+        "description": "Label for order status",
+        "placeholders": { "status": {} }
+      },
+
+      "orderReceiverLabel": "Receiver: {name}",
+      "@orderReceiverLabel": {
+        "description": "Label for receiver name",
+        "placeholders": { "name": {} }
+      },
+
+      "orderAddressLabel": "Address: {address}",
+      "@orderAddressLabel": {
+        "description": "Label for receiver address",
+        "placeholders": { "address": {} }
+      },
+
+      "orderPhoneLabel": "Phone: {phone}",
+      "@orderPhoneLabel": {
+        "description": "Label for receiver phone",
+        "placeholders": { "phone": {} }
+      },
+
+      "orderDownPaymentLabel": "Deposit: {amount}",
+      "@orderDownPaymentLabel": {
+        "description": "Order down payment label",
+        "placeholders": { "amount": {} }
+      },
+
+      "orderBalancePaymentLabel": "Remaining payment: {amount}",
+      "@orderBalancePaymentLabel": {
+        "description": "Order remaining balance label",
+        "placeholders": { "amount": {} }
+      },
+
+      "orderCreatedDateLabel": "Created on: {date}",
+      "@orderCreatedDateLabel": {
+        "description": "Order creation date",
+        "placeholders": { "date": {} }
+      },
+
+      "orderItemListLabel": "Item list:",
+      "orderUpdatedDetailsLabel": "Updated details",
+      "orderUpdatedNotice": "Note: This content has been edited in the 'Update Order' screen (not sent if the green action button was not pressed).",
+
+      "orderActionChangeStatus": "Change status",
+      "orderActionUpdateOrder": "Update order",
+
+      "orderSnackUpdateSuccess": "Order updated successfully",
+      "orderSnackUpdateFailed": "Failed to update order",
+      "orderSnackSessionExpired": "Session expired. Please login again",
+
+      "contractorHomeAppBarTitle": "Beluga Express",
+      "contractorHomeWelcomeTitle": "Welcome to Beluga Express!",
+      "contractorHomeWelcomeMessage": "Select and update available order statuses.",
+      "contractorHomeViewOrdersButton": "View Available Orders",
+      "contractorHomeTabHome": "Home",
+      "contractorHomeTabOrders": "Orders",
+      "contractorHomeTabProfile": "Profile",
+
+      "updateOrderAppBarTitle": "Update Order",
+      "updateOrderItemTypeLabel": "Item Type",
+      "updateOrderQuantityLabelKg": "Kg",
+      "updateOrderQuantityLabelUnit": "{unit}",
+      "@updateOrderQuantityLabelUnit": {
+        "description": "Label for quantity input for unit other than kg",
+        "placeholders": {
+          "unit": {}
+        }
+      },
+      "updateOrderDeleteItemTooltip": "Delete item",
+      "updateOrderAddItemButton": "Add Item",
+      "updateOrderConfirmDialogTitle": "Confirm Order Update",
+      "updateOrderConfirmDialogChangesLabel": "Changes:",
+      "updateOrderConfirmButton": "Confirm",
+      "updateOrderCancelButton": "Cancel",
+      "updateOrderInvalidQuantityMessage": "Please enter a valid quantity for each item",
+      "updateOrderLoadingPricingMessage": "Loading pricing table...",
+      "updateOrderPricingErrorMessage": "Error fetching pricing table: {error}",
+      "@updateOrderPricingErrorMessage": {
+        "description": "Error message when fetching pricing table",
+        "placeholders": {
+          "error": {}
+        }
+      },
+      "updateOrderPricingLoadedMessage": "{count} items loaded in pricing table",
+      "@updateOrderPricingLoadedMessage": {
+        "description": "Message showing number of pricing items loaded",
+        "placeholders": {
+          "count": {}
+        }
+      },
+      "updateOrderNoItemsMessage": "No items. Press Add to include.",
+
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "update": "Update"
+
+
+
+
+    }

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'package:intl/intl.dart';
+import '../l10n/app_localizations.dart';
 
 class TradeScreen extends StatefulWidget {
   final String accessToken;
@@ -43,23 +44,24 @@ class _TradeScreenState extends State<TradeScreen> {
     }
   }
 
-  String _formatCurrency(double amount) {
-    final formatter = NumberFormat("#,##0", "vi_VN");
+  String _formatCurrency(BuildContext context, double amount) {
+    final formatter = NumberFormat("#,##0", Localizations.localeOf(context).toString());
     return "${formatter.format(amount)} VND";
   }
 
-  String _formatDate(String rawDate) {
+  String _formatDate(String rawDate, BuildContext context) {
     try {
       final dateTime = DateTime.parse(rawDate);
-      return DateFormat('dd/MM/yyyy HH:mm').format(dateTime);
+      // Chuyển format ngôn ngữ nếu muốn: locale từ context
+      return DateFormat('dd/MM/yyyy HH:mm', Localizations.localeOf(context).toString()).format(dateTime);
     } catch (_) {
       return rawDate;
     }
   }
 
-  Widget _buildTransactionItem(dynamic tx) {
+  Widget _buildTransactionItem(BuildContext context, dynamic tx, AppLocalizations loc) {
     final double amount = (tx['amount'] as num).toDouble();
-    final String paymentFor = tx['paymentFor'] ?? "Không rõ";
+    final String paymentFor = tx['paymentFor'] ?? loc.tradePaymentForLabel;
     final String paymentDate = tx['paymentDate'] ?? "";
 
     return Card(
@@ -74,7 +76,7 @@ class _TradeScreenState extends State<TradeScreen> {
           size: 32,
         ),
         title: Text(
-          _formatCurrency(amount),
+          _formatCurrency(context, amount),
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -85,12 +87,12 @@ class _TradeScreenState extends State<TradeScreen> {
           children: [
             const SizedBox(height: 6),
             Text(
-              paymentFor,
+              "${loc.tradePaymentForLabel}: $paymentFor",
               style: const TextStyle(fontSize: 14, color: Colors.black87),
             ),
             const SizedBox(height: 4),
             Text(
-              _formatDate(paymentDate),
+              "${loc.tradePaymentDateLabel}: ${_formatDate(paymentDate, context)}",
               style: const TextStyle(fontSize: 13, color: Colors.grey),
             ),
           ],
@@ -101,9 +103,10 @@ class _TradeScreenState extends State<TradeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Lịch sử giao dịch"),
+        title: Text(loc.tradeTitle),
         centerTitle: true,
         elevation: 0,
         flexibleSpace: Container(
@@ -119,16 +122,16 @@ class _TradeScreenState extends State<TradeScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _transactions.isEmpty
-          ? const Center(
+          ? Center(
         child: Text(
-          "Chưa có giao dịch nào",
-          style: TextStyle(fontSize: 16, color: Colors.grey),
+          loc.tradeNoTransactions,
+          style: const TextStyle(fontSize: 16, color: Colors.grey),
         ),
       )
           : ListView.builder(
         itemCount: _transactions.length,
         itemBuilder: (context, index) {
-          return _buildTransactionItem(_transactions[index]);
+          return _buildTransactionItem(context, _transactions[index], loc);
         },
       ),
     );

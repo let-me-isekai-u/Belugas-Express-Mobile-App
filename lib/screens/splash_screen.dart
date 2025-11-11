@@ -7,7 +7,9 @@ import 'home_screen.dart';
 import 'Contructor/Contractor_home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  final void Function(Locale)? onLocaleChange;
+
+  const SplashScreen({super.key, this.onLocaleChange});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -62,7 +64,13 @@ class _SplashScreenState extends State<SplashScreen> {
       // Nhà thầu
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const ContractorHomeScreen()),
+        MaterialPageRoute(
+          builder: (_) => ContractorHomeScreen(
+            onLocaleChange: widget.onLocaleChange!,
+          ),
+
+        ),
+
       );
     } else {
       // User bình thường
@@ -76,7 +84,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void _goToLogin() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      MaterialPageRoute(builder: (_) => LoginScreen(onLocaleChange: widget.onLocaleChange)),
     );
   }
 

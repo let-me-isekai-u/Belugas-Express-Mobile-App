@@ -99,6 +99,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         return "Đang vận chuyển";
       case 7:
         return "Giao hàng thành công";
+      case 8:
+        return "Đã hủy";
       default:
         return "Không xác định";
     }
@@ -118,6 +120,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         return "Chờ gửi hàng";
       case 6:
         return "Đang vận chuyển đến địa chỉ nhận";
+      case 7:
+        return "Giao hàng thành công";
+      case 8:
+        return "Đơn hàng đã bị hủy";
       default:
         return null;
     }
@@ -134,6 +140,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       case 6:
       case 7:
         return Colors.green;
+      case 8:
+        return Colors.red;
       default:
         return Colors.grey;
     }
@@ -151,6 +159,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         return Icons.local_shipping;
       case 7:
         return Icons.check_circle;
+      case 8:
+        return Icons.cancel;
       default:
         return Icons.help_outline;
     }
@@ -200,6 +210,117 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
   }
 
+  Widget _buildRow(String label, String value,
+      {Color? valueColor, bool bold = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "$label:",
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+              color: valueColor ?? Colors.black87,
+            ),
+            softWrap: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildItemsSection(Map<String, dynamic> o) {
+    final items = (o['items'] as List?) ?? [];
+    if (items.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Mặt hàng:",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 6),
+        ...items.map((raw) {
+          final it = raw as Map<String, dynamic>;
+          final name = (it['name'] ?? '').toString();
+          final unit = (it['unit'] ?? '').toString();
+          final price = _toDouble(it['price']);
+          final weightReal = _toDouble(it['weightReal']);
+          final weightEstimate = _toDouble(it['weightEstimate']);
+          final weight = weightReal > 0 ? weightReal : weightEstimate;
+          final amount = (it['amount'] is num)
+              ? (it['amount'] as num).toDouble()
+              : price * weight;
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  softWrap: true,
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        "[${weight.toStringAsFixed(2)} $unit]",
+                        softWrap: true,
+                      ),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        "${price.toStringAsFixed(0)} đ/$unit",
+                        style: const TextStyle(color: Colors.green),
+                        softWrap: true,
+                      ),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        _fmtMoney(amount),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        softWrap: true,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ],
+    );
+  }
+
+  Widget _buildSection(String title, List<Widget> children) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+              fontWeight: FontWeight.bold, fontSize: 15, color: Colors.blue),
+        ),
+        const SizedBox(height: 12),
+        ...children,
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -226,18 +347,16 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           ? const Center(child: CircularProgressIndicator())
           : errorMessage != null
           ? Center(
-        child: Text(
-          errorMessage!,
-          style: const TextStyle(color: Colors.red, fontSize: 16),
-        ),
-      )
+          child: Text(
+            errorMessage!,
+            style: const TextStyle(color: Colors.red, fontSize: 16),
+          ))
           : orderDetail == null
           ? const Center(
-        child: Text(
-          "Không tìm thấy dữ liệu đơn hàng",
-          style: TextStyle(color: Colors.red),
-        ),
-      )
+          child: Text(
+            "Không tìm thấy dữ liệu đơn hàng",
+            style: TextStyle(color: Colors.red),
+          ))
           : _buildOrderDetail(),
     );
   }
@@ -252,7 +371,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
@@ -309,7 +428,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
                       ),
-                      overflow: TextOverflow.ellipsis,
+                      overflow: TextOverflow.visible,
                     ),
                   ),
                   if (_statusNote(statusValue) != null) ...[
@@ -347,111 +466,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 valueColor: Colors.green, bold: true),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildItemsSection(Map<String, dynamic> o) {
-    final items = (o['items'] as List?) ?? [];
-    if (items.isEmpty) return const SizedBox.shrink();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text("Mặt hàng:", style: TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 6),
-        ...items.map((raw) {
-          final it = raw as Map<String, dynamic>;
-          final name = (it['name'] ?? '').toString();
-          final unit = (it['unit'] ?? '').toString();
-          final price = _toDouble(it['price']);
-          final weightReal = _toDouble(it['weightReal']);
-          final weightEstimate = _toDouble(it['weightEstimate']);
-          final weight = weightReal > 0 ? weightReal : weightEstimate;
-          final amount = (it['amount'] is num)
-              ? (it['amount'] as num).toDouble()
-              : price * weight;
-
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 2),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: Text(
-                    name,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Flexible(
-                  flex: 2,
-                  child: Text(
-                    "[${weight.toStringAsFixed(2)} $unit]",
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Flexible(
-                  flex: 2,
-                  child: Text(
-                    "${price.toStringAsFixed(0)} đ/$unit",
-                    style: const TextStyle(color: Colors.green),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Flexible(
-                  flex: 2,
-                  child: Text(
-                    _fmtMoney(amount),
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }).toList(),
-      ],
-    );
-  }
-
-  Widget _buildSection(String title, List<Widget> children) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-              fontWeight: FontWeight.bold, fontSize: 15, color: Colors.blue),
-        ),
-        const SizedBox(height: 6),
-        ...children,
-      ],
-    );
-  }
-
-  Widget _buildRow(String label, String value,
-      {Color? valueColor, bool bold = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Text("$label: ",
-              style:
-              const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: bold ? FontWeight.bold : FontWeight.normal,
-                color: valueColor ?? Colors.black87,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
       ),
     );
   }
