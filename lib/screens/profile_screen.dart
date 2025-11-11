@@ -18,7 +18,7 @@ class ProfileScreen extends StatelessWidget {
 
   // 🆕 Hàm mở Zalo
   Future<void> _openZalo() async {
-    final Uri zaloUrl = Uri.parse('https://zalo.me/0932265471'); // 🔹 thay số Zalo thật nếu cần
+    final Uri zaloUrl = Uri.parse('https://zalo.me/0932265471'); //  thay số Zalo nếu cần
     if (await canLaunchUrl(zaloUrl)) {
       await launchUrl(zaloUrl, mode: LaunchMode.externalApplication);
     }
@@ -77,18 +77,18 @@ class ProfileScreen extends StatelessWidget {
 
             // 🆕 Nút Zalo nhỏ góc phải trên phần nút chức năng
             Padding(
-              padding: const EdgeInsets.only(right: 25),
+              padding: const EdgeInsets.only(right: 28),
               child: Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
                   onTap: _openZalo,
                   child: CircleAvatar(
-                    radius: 24,
+                    radius: 40,
                     backgroundColor: Colors.white,
                     child: Image.asset(
                       'lib/assets/icons/icons8-zalo-100.png',
-                      width: 32,
-                      height: 32,
+                      width: 45,
+                      height: 45,
                     ),
                   ),
                 ),

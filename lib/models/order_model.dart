@@ -12,8 +12,8 @@ class Order {
   final int status;
   final DateTime createDate;
 
-  final double downPayment; // tiền đã cọc (QR)
-  final double payWithBalance; // tiền đã trừ từ ví
+  final double downPayment;
+  final double payWithBalance;
   final List<Map<String, dynamic>> items;
 
   Order({

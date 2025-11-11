@@ -95,7 +95,7 @@ class _ContractorHomeScreenState extends State<ContractorHomeScreen>
               Icon(Icons.flight_takeoff, size: 70, color: Colors.blue[400]),
               const SizedBox(height: 20),
               Text(
-                "Welcome to Begulas Express!",
+                "Welcome to Beluga Express!",
                 style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,

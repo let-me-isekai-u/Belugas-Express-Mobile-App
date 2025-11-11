@@ -200,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen>
               ),
               const SizedBox(height: 10),
               Text(
-                "Begulas Express",
+                "Beluga Express",
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
@@ -212,7 +212,7 @@ class _HomeScreenState extends State<HomeScreen>
               ),
               const SizedBox(height: 16),
               Text(
-                "Chào mừng bạn đã đến với ứng dụng giao nhận quốc tế Begulas Express.",
+                "Chào mừng bạn đã đến với ứng dụng giao nhận quốc tế Beluga Express.",
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.grey[700],

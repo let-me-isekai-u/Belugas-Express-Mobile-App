@@ -135,7 +135,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const Icon(Icons.app_registration, size: 80, color: Colors.white),
                 const SizedBox(height: 12),
                 const Text(
-                  "Begulas Express",
+                  "Beluga Express",
                   style: TextStyle(
                     fontFamily: 'Serif',
                     color: Colors.white,

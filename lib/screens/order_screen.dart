@@ -7,6 +7,18 @@ import '../models/order_model.dart';
 import '../services/api_service.dart';
 import 'order_detail_screen.dart';
 
+const List<Map<String, dynamic>> _statusTabs = [
+  {"id": 0, "name": "Tất cả"},
+  {"id": 1, "name": "Đang đến lấy hàng"},
+  {"id": 2, "name": "Đang trên đường đến kho trung chuyển"},
+  {"id": 3, "name": "Đã đến kho"},
+  {"id": 4, "name": "Chờ thanh toán"},
+  {"id": 5, "name": "Chờ gửi hàng"},
+  {"id": 6, "name": "Đang vận chuyển"},
+  {"id": 7, "name": "Giao hàng thành công"},
+  {"id": 8, "name": "Đã hủy"},
+];
+
 class OrderScreen extends StatefulWidget {
   const OrderScreen({super.key});
 
@@ -14,13 +26,14 @@ class OrderScreen extends StatefulWidget {
   State<OrderScreen> createState() => _OrderScreenState();
 }
 
-class _OrderScreenState extends State<OrderScreen> {
+class _OrderScreenState extends State<OrderScreen> with SingleTickerProviderStateMixin {
   late Future<List<Order>> _futureOrders;
   Timer? _pollingTimer;
   double _walletBalance = 0.0;
   int _userId = 0;
   String _accessToken = '';
   final Set<int> _processingOrderIds = {};
+  late TabController _tabController;
 
   @override
   void initState() {
@@ -29,11 +42,13 @@ class _OrderScreenState extends State<OrderScreen> {
     _loadProfileMeta();
     // Always fetch wallet on entering this screen
     _fetchWallet();
+    _tabController = TabController(length: _statusTabs.length, vsync: this);
   }
 
   @override
   void dispose() {
     _pollingTimer?.cancel();
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -48,6 +63,7 @@ class _OrderScreenState extends State<OrderScreen> {
       final res = await ApiService.getProfile(accessToken: token);
       if (res.statusCode == 200) {
         final parsed = jsonDecode(res.body);
+        if (!mounted) return;
         setState(() {
           _walletBalance = (parsed['wallet'] is num) ? (parsed['wallet'] as num).toDouble() : 0.0;
         });
@@ -71,13 +87,14 @@ class _OrderScreenState extends State<OrderScreen> {
         if (body is Map && (body['success'] == true || body.containsKey('wallet'))) {
           final w = body['wallet'];
           if (w is num) {
+            if (!mounted) return;
             setState(() {
               _walletBalance = w.toDouble();
               _accessToken = token;
             });
           } else if (w is String) {
             final parsed = double.tryParse(w);
-            if (parsed != null) {
+            if (parsed != null && mounted) {
               setState(() => _walletBalance = parsed);
             }
           }
@@ -244,7 +261,7 @@ class _OrderScreenState extends State<OrderScreen> {
           // Refresh orders in background WITHOUT passing a Future into setState
           _futureOrders = _loadOrders();
           if (mounted) {
-            setState(() {}); // synchronous update only
+            setState(() {});
           }
           return;
         } else {
@@ -292,121 +309,157 @@ class _OrderScreenState extends State<OrderScreen> {
     }
   }
 
+  Widget _buildOrderTile(Order o) {
+    return InkWell(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => OrderDetailScreen(orderId: o.id)),
+      ),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 6)],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Fix tràn cho dòng trạng thái
+            Row(
+              children: [
+                Icon(o.statusIcon, color: o.statusColor),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(o.statusText,
+                      style: TextStyle(fontWeight: FontWeight.bold, color: o.statusColor),
+                      overflow: TextOverflow.ellipsis),
+                ),
+                if (o.statusNote != null)
+                  IconButton(
+                    onPressed: () => _showStatusNote(context, o),
+                    icon: Icon(Icons.info_outline, color: o.statusColor, size: 18),
+                    tooltip: "Chi tiết trạng thái",
+                  ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text("Mã đơn: ${o.orderCode}", style: const TextStyle(fontSize: 15)),
+            const SizedBox(height: 4),
+            Text("Người gửi: ${o.senderName} (${o.senderPhone})", overflow: TextOverflow.ellipsis),
+            Text("Người nhận: ${o.receiverName}", overflow: TextOverflow.ellipsis),
+            Text("Địa chỉ: ${o.receiverAddress}", overflow: TextOverflow.ellipsis),
+            const Divider(height: 18),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text("Tổng: ${_fmtMoney(o.total)}",
+                      style: const TextStyle(fontWeight: FontWeight.w500)),
+                ),
+                Expanded(
+                  child: Text("Cọc: ${_fmtMoney(o.downPayment)}",
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+
+                ),
+              ],
+            ),
+            // Chỉ hiện nút thanh toán khi status == 4 và tiền cọc < tổng
+            if (o.status == 4 && o.downPayment < o.total)
+              Align(
+                alignment: Alignment.centerRight,
+                child: _processingOrderIds.contains(o.id)
+                    ? const SizedBox(
+                  height: 36,
+                  width: 36,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+                    : ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onPressed: () => _attemptWalletPayment(o),
+                  icon: const Icon(Icons.payment),
+                  // NOTE: Do not use Flexible/Expanded directly inside label.
+                  label: Text(
+                    "Thanh toán ${_fmtMoney(o.total - o.downPayment)}",
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildListForStatus(int status, List<Order> orders) {
+    final filtered = status == 0 ? orders : orders.where((o) => o.status == status).toList();
+    if (filtered.isEmpty) {
+      return const Center(child: Text("Không có đơn hàng."));
+    }
+
+    return RefreshIndicator(
+      onRefresh: () async {
+        // refresh same future and rebuild
+        _futureOrders = _loadOrders();
+        setState(() {});
+        await _futureOrders;
+      },
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: filtered.length,
+        itemBuilder: (context, index) => _buildOrderTile(filtered[index]),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF6FAFF),
-      appBar: AppBar(
-        backgroundColor: Colors.blue[300],
-        title: const Text("Danh sách đơn hàng"),
-      ),
-      body: FutureBuilder<List<Order>>(
-        future: _futureOrders,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text("Lỗi: ${snapshot.error}"));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("Không có đơn hàng."));
-          }
+    return DefaultTabController(
+      length: _statusTabs.length,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF6FAFF),
+        appBar: AppBar(
+          backgroundColor: Colors.blue[300],
+          title: const Text("Danh sách đơn hàng"),
+          bottom: TabBar(
+            controller: _tabController,
+            isScrollable: true,
+            indicatorColor: Colors.orange,
+            labelColor: Colors.orange,
+            unselectedLabelColor: Colors.white,
+            tabs: _statusTabs.map((s) => Tab(child: Text(s["name"], style: const TextStyle(fontSize: 13)))).toList(),
+          ),
+        ),
+        body: FutureBuilder<List<Order>>(
+          future: _futureOrders,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text("Lỗi: ${snapshot.error}"));
+            } else if (!snapshot.hasData) {
+              return const Center(child: Text("Không có đơn hàng."));
+            }
 
-          final orders = snapshot.data!;
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: orders.length,
-            itemBuilder: (context, index) {
-              final o = orders[index];
-              return InkWell(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => OrderDetailScreen(orderId: o.id)),
-                ),
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 6)],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Fix tràn cho dòng trạng thái
-                      Row(
-                        children: [
-                          Icon(o.statusIcon, color: o.statusColor),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(o.statusText,
-                                style: TextStyle(fontWeight: FontWeight.bold, color: o.statusColor),
-                                overflow: TextOverflow.ellipsis),
-                          ),
-                          if (o.statusNote != null)
-                            IconButton(
-                              onPressed: () => _showStatusNote(context, o),
-                              icon: Icon(Icons.info_outline, color: o.statusColor, size: 18),
-                              tooltip: "Chi tiết trạng thái",
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text("Mã đơn: ${o.orderCode}", style: const TextStyle(fontSize: 15)),
-                      const SizedBox(height: 4),
-                      Text("Người gửi: ${o.senderName} (${o.senderPhone})", overflow: TextOverflow.ellipsis),
-                      Text("Người nhận: ${o.receiverName}", overflow: TextOverflow.ellipsis),
-                      Text("Địa chỉ: ${o.receiverAddress}", overflow: TextOverflow.ellipsis),
-                      const Divider(height: 18),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text("Tổng: ${_fmtMoney(o.total)}",
-                                style: const TextStyle(fontWeight: FontWeight.w500)),
-                          ),
-                          Expanded(
-                            child: Text("Cọc: ${_fmtMoney(o.displayedDownPayment)}",
-                              textAlign: TextAlign.right,
-                              style: const TextStyle(fontWeight: FontWeight.w500),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                      // Chỉ hiện nút thanh toán khi status == 4 và tiền cọc < tổng
-                      if (o.status == 4 && o.downPayment < o.total)
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: _processingOrderIds.contains(o.id)
-                              ? const SizedBox(
-                            height: 36,
-                            width: 36,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                              : ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            onPressed: () => _attemptWalletPayment(o),
-                            icon: const Icon(Icons.payment),
-                            // NOTE: Do not use Flexible/Expanded directly inside label.
-                            label: Text(
-                              "Thanh toán ${_fmtMoney(o.total - o.downPayment)}",
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
+            final orders = snapshot.data!;
+            return TabBarView(
+              controller: _tabController,
+              children: _statusTabs.map((s) {
+                final statusId = s["id"] as int;
+                return _buildListForStatus(statusId, orders);
+              }).toList(),
+            );
+          },
+        ),
       ),
     );
   }
