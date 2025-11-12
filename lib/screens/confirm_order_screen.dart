@@ -30,25 +30,40 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchWalletBalance();
+    // Đợi widget mount xong rồi mới gọi API
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchWalletBalance();
+    });
   }
 
   Future<void> _fetchWalletBalance() async {
-    final loc = AppLocalizations.of(context)!;
     try {
       final res = await ApiService.getWalletBalance(accessToken: widget.accessToken);
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         if (data["success"] == true) {
-          setState(() => _walletBalance = (data["wallet"] as num).toDouble());
+          if (mounted) {
+            setState(() => _walletBalance = (data["wallet"] as num).toDouble());
+          }
         } else {
-          _showDialog(loc.confirmOrderDialogFetchError, title: loc.confirmOrderDialogTitle);
+          _showDialog(
+            AppLocalizations.of(context)!.confirmOrderDialogFetchError,
+            title: AppLocalizations.of(context)!.confirmOrderDialogTitle,
+          );
         }
       } else {
-        _showDialog(loc.changePasswordConnectionError("${res.statusCode}"), title: loc.confirmOrderDialogTitle);
+        _showDialog(
+          AppLocalizations.of(context)!
+              .changePasswordConnectionError("${res.statusCode}"),
+          title: AppLocalizations.of(context)!.confirmOrderDialogTitle,
+        );
       }
     } catch (e) {
-      _showDialog(loc.changePasswordConnectionError("$e"), title: loc.confirmOrderDialogTitle);
+      _showDialog(
+        AppLocalizations.of(context)!
+            .changePasswordConnectionError("$e"),
+        title: AppLocalizations.of(context)!.confirmOrderDialogTitle,
+      );
     }
   }
 
@@ -115,9 +130,10 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
         );
       }
     } catch (e) {
-      _showDialog(loc.changePasswordConnectionError("$e"), title: loc.confirmOrderDialogTitle);
+      _showDialog(loc.changePasswordConnectionError("$e"),
+          title: loc.confirmOrderDialogTitle);
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

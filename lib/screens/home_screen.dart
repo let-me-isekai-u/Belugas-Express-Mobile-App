@@ -109,7 +109,8 @@ class _HomeScreenState extends State<HomeScreen>
       child: _selectedIndex == 1
           ? RechargeScreen(accessToken: widget.accessToken)
           : _selectedIndex == 2
-          ? const CreateOrderScreen()
+          ? CreateOrderScreen(accessToken: widget.accessToken)
+
           : _selectedIndex == 3
           ? const OrderScreen()
           : _selectedIndex == 4
