@@ -35,7 +35,12 @@ flutter:
     - lib/assets/icons/vietnam.png
     - lib/assets/icons/LOGO BELUGA FINAL.png
 
-
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "lib/assets/icons/OutsideLogo.jpg"
+  adaptive_icon_background: "#ffffff"   # dùng cho Android 12+
+  adaptive_icon_foreground: "lib/assets/icons/OutsideLogo.jpg"
 # Cấu hình l10n: phải cùng cấp với flutter, không thụt vào
 l10n:
   arb-dir: lib/l10n

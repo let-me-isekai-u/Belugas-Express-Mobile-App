@@ -12,7 +12,7 @@
         <package android:name="com.zing.zalo" />
     </queries>
     <application
-        android:label="example"
+        android:label="Beluga Express"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
