@@ -16,11 +16,28 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin {
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
+
+  late final AnimationController _logoController;
+
+  @override
+  void initState() {
+    super.initState();
+    _logoController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true); // lặp lại nhún nhẹ liên tục
+  }
+
+  @override
+  void dispose() {
+    _logoController.dispose();
+    super.dispose();
+  }
 
   void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -76,8 +93,8 @@ class _LoginScreenState extends State<LoginScreen> {
             context,
             MaterialPageRoute(
               builder: (_) => HomeScreen(
-                  accessToken: data["accessToken"],
-                  onLocaleChange: widget.onLocaleChange,
+                accessToken: data["accessToken"],
+                onLocaleChange: widget.onLocaleChange,
               ),
             ),
           );
@@ -103,108 +120,146 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: Colors.blue[700],
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Nút đổi ngôn ngữ
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: _toggleLanguage,
-                      child: Row(
-                        children: [
-                          Image.asset(
-                            Localizations.localeOf(context).languageCode == 'vi'
-                                ? 'lib/assets/icons/vietnam.png'
-                                : 'lib/assets/icons/united-states.png',
-                            width: 38,
-                            height: 38,
+        child: Column(
+          children: [
+            // 🔹 Nút đổi ngôn ngữ lên trên cùng
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Align(
+                alignment: Alignment.topRight,
+                child: TextButton(
+                  onPressed: _toggleLanguage,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.asset(
+                        Localizations.localeOf(context).languageCode == 'vi'
+                            ? 'lib/assets/icons/vietnam.png'
+                            : 'lib/assets/icons/united-states.png',
+                        width: 38,
+                        height: 38,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        Localizations.localeOf(context).languageCode == 'vi' ? 'VI' : 'EN',
+                        style: const TextStyle(
+                          fontSize: 23,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            Expanded(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 20),
+
+                      // 🔹 Logo Beluga có animation
+                      ScaleTransition(
+                        scale: Tween<double>(begin: 1.0, end: 1.05).animate(
+                          CurvedAnimation(parent: _logoController, curve: Curves.easeInOut),
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.25),
+                                blurRadius: 16,
+                                spreadRadius: 2,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            Localizations.localeOf(context).languageCode == 'vi' ? 'VI' : 'EN',
-                            style: const TextStyle(
-                              fontSize: 23,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Image.asset(
+                              'lib/assets/icons/LOGO BELUGA FINAL.png',
+                              width: 140,
+                              height: 140,
+                              fit: BoxFit.contain,
                             ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      Text(
+                        loc.appTitle,
+                        style: const TextStyle(
+                          fontFamily: 'Serif',
+                          color: Colors.white,
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      const SizedBox(height: 40),
+                      _buildTextField(phoneController, loc.phone, Icons.phone, false),
+                      const SizedBox(height: 16),
+                      _buildTextField(passwordController, loc.password, Icons.lock, true),
+                      const SizedBox(height: 20),
+
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.lightBlue[300],
+                          minimumSize: const Size(double.infinity, 48),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          elevation: 3,
+                        ),
+                        onPressed: _isLoading ? null : () => _login(context),
+                        child: _isLoading
+                            ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                            : Text(loc.login),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+                              );
+                            },
+                            child: Text(loc.forgotPassword, style: const TextStyle(color: Colors.white)),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => RegisterScreen(onLocaleChange: widget.onLocaleChange),
+                                ),
+                              );
+                            },
+                            child: Text(loc.register, style: const TextStyle(color: Colors.white)),
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-
-                const Icon(Icons.local_shipping, size: 80, color: Colors.white),
-                const SizedBox(height: 12),
-
-                Text(
-                  loc.appTitle,
-                  style: const TextStyle(
-                    fontFamily: 'Serif',
-                    color: Colors.white,
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
+                    ],
                   ),
                 ),
-
-                const SizedBox(height: 40),
-                _buildTextField(phoneController, loc.phone, Icons.phone, false),
-                const SizedBox(height: 16),
-                _buildTextField(passwordController, loc.password, Icons.lock, true),
-                const SizedBox(height: 20),
-
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.lightBlue[300],
-                    minimumSize: const Size(double.infinity, 48),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    elevation: 3,
-                  ),
-                  onPressed: _isLoading ? null : () => _login(context),
-                  child: _isLoading
-                      ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                  )
-                      : Text(loc.login),
-                ),
-
-                const SizedBox(height: 16),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
-                        );
-                      },
-                      child: Text(loc.forgotPassword, style: const TextStyle(color: Colors.white)),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => RegisterScreen(onLocaleChange: widget.onLocaleChange),
-                          ),
-                        );
-                      },
-                      child: Text(loc.register, style: const TextStyle(color: Colors.white)),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

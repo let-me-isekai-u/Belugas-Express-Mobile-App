@@ -362,7 +362,8 @@
   "updateOrderNoItemsMessage": "Chưa có hàng hóa. Nhấn Thêm để thêm.",
   "cancel": "Huỷ",
   "confirm": "Xác nhận",
-  "update": "Cập nhật"
+  "update": "Cập nhật",
+  "createOrderButton": "Tạo đơn vận chuyển"
 
 
 

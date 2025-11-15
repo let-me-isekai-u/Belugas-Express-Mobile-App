@@ -692,4 +692,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get update => 'Update';
+
+  @override
+  String get createOrderButton => 'Create Delivery Order';
 }

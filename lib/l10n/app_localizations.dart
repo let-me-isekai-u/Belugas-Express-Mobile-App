@@ -1348,6 +1348,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Update'**
   String get update;
+
+  /// No description provided for @createOrderButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Delivery Order'**
+  String get createOrderButton;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

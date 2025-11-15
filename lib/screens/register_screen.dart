@@ -144,7 +144,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
             child: Column(
               children: [
-                const Icon(Icons.app_registration, size: 80, color: Colors.white),
+                // const Icon(Icons.app_registration, size: 80, color: Colors.white),
                 const SizedBox(height: 12),
                 Text(
                   loc.registerTitle,
@@ -398,9 +398,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               (v) {
             final loc = AppLocalizations.of(context)!;
             if (v == null || v.isEmpty) return loc.enterPassword;
-            if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$').hasMatch(v)) {
-              // No dedicated message in arb for strong password - fall back to enterPassword
-              return loc.enterPassword;
+            if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$')
+                .hasMatch(v)) {
+              return loc.changePasswordErrorWeak; // ✅ sửa ở đây
             }
             return null;
           },

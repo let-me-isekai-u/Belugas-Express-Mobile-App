@@ -33,6 +33,8 @@ flutter:
     - lib/assets/icons/icons8-zalo-100.png
     - lib/assets/icons/united-states.png
     - lib/assets/icons/vietnam.png
+    - lib/assets/icons/LOGO BELUGA FINAL.png
+
 
 # Cấu hình l10n: phải cùng cấp với flutter, không thụt vào
 l10n:

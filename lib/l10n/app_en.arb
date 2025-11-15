@@ -361,7 +361,8 @@
 
       "cancel": "Cancel",
       "confirm": "Confirm",
-      "update": "Update"
+      "update": "Update",
+      "createOrderButton": "Create Delivery Order"
 
 
 

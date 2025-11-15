@@ -692,4 +692,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get update => 'Cập nhật';
+
+  @override
+  String get createOrderButton => 'Tạo đơn vận chuyển';
 }
