@@ -860,7 +860,7 @@ abstract class AppLocalizations {
   /// No description provided for @createOrderItemWeight.
   ///
   /// In en, this message translates to:
-  /// **'Weight ({unit})'**
+  /// **'Unit ({unit})'**
   String createOrderItemWeight(Object unit);
 
   /// No description provided for @createOrderItemRemove.

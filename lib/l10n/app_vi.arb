@@ -194,7 +194,7 @@
   "createOrderReceiverCountry": "Quốc gia nhận",
 
   "createOrderItemType": "Loại hàng",
-  "createOrderItemWeight": "Số lượng ({unit})",
+  "createOrderItemWeight": "Đơn vị ({unit})",
   "createOrderItemRemove": "Xoá mặt hàng",
   "createOrderAddItem": "Thêm mặt hàng",
   "createOrderConfirmButton": "Xác nhận đơn hàng",

@@ -423,7 +423,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String createOrderItemWeight(Object unit) {
-    return 'Số lượng ($unit)';
+    return 'Đơn vị ($unit)';
   }
 
   @override

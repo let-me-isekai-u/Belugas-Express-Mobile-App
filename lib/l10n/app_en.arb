@@ -193,7 +193,7 @@
       "createOrderReceiverCountry": "Destination Country",
 
       "createOrderItemType": "Item Type",
-      "createOrderItemWeight": "Weight ({unit})",
+      "createOrderItemWeight": "Unit ({unit})",
       "createOrderItemRemove": "Remove item",
       "createOrderAddItem": "Add Item",
       "createOrderConfirmButton": "Confirm Order",

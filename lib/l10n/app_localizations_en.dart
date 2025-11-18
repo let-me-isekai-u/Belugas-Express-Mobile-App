@@ -423,7 +423,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String createOrderItemWeight(Object unit) {
-    return 'Weight ($unit)';
+    return 'Unit ($unit)';
   }
 
   @override
