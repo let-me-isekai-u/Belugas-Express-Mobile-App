@@ -62,8 +62,10 @@ class _RechargeScreenState extends State<RechargeScreen> {
         "${userId}${timestamp.hour.toString().padLeft(2, '0')}${timestamp.minute.toString().padLeft(2, '0')}${timestamp.second.toString().padLeft(2, '0')}";
     qrDescription = description;
     qrUrl =
-    "https://img.vietqr.io/image/MB-34567200288888-compact2.png?amount=${amount.toStringAsFixed(0)}&addInfo=$description&accountName=LY%20NHAT%20ANH";
-
+    //https://img.vietqr.io/image/TCB-65388888-compact2.png?amount=${amount.toStringAsFixed(0)}&addInfo=${description}&accountName=CTY%20CP%20CN%20VA%20DV%20TT%20THE%20BELUGAS
+    "https://img.vietqr.io/image/TCB-65388888-compact2.png?amount=${amount.toStringAsFixed(0)}&addInfo=${description}&accountName=CTY%20CP%20CN%20VA%20DV%20TT%20THE%20BELUGAS";
+/* đây là ảnh QR cũ: https://img.vietqr.io/image/MB-34567200288888-compact2.png?amount=${amount.toStringAsFixed(0)}&addInfo=$description&accountName=LY%20NHAT%20ANH
+* */
     if (!mounted) return;
     setState(() {
       showQR = true;
