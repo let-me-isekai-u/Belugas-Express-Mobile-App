@@ -81,7 +81,7 @@
       "profilePhone": "Phone number",
       "changePasswordButton": "Change password",
       "logoutButton": "Logout",
-      "changeLanguage": "Thay đổi ngôn ngữ",
+      "changeLanguage": "Change the language",
       "rechargeTitle": "Recharge Wallet",
       "rechargeAmountHint": "Enter amount to recharge",
       "rechargeMinAmountError": "Minimum recharge amount is 50,000 VND",
@@ -362,7 +362,15 @@
       "cancel": "Cancel",
       "confirm": "Confirm",
       "update": "Update",
-      "createOrderButton": "Create Delivery Order"
+      "createOrderButton": "Create Delivery Order",
+
+      "profileContactUs": "Contact us",
+
+      "deleteAccountButton": "Delete account",
+
+      "verificationCode": "OTP code",
+
+      "enterVerificationCode": "Enter the verification code to confirm deletion of this user account"
 
 
 

@@ -296,7 +296,7 @@ abstract class AppLocalizations {
   /// No description provided for @enterVerificationCode.
   ///
   /// In en, this message translates to:
-  /// **'Enter verification code'**
+  /// **'Enter the verification code to confirm deletion of this user account'**
   String get enterVerificationCode;
 
   /// No description provided for @agreeTermsWarning.
@@ -524,7 +524,7 @@ abstract class AppLocalizations {
   /// No description provided for @changeLanguage.
   ///
   /// In en, this message translates to:
-  /// **'Thay đổi ngôn ngữ'**
+  /// **'Change the language'**
   String get changeLanguage;
 
   /// No description provided for @rechargeTitle.
@@ -1354,6 +1354,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Create Delivery Order'**
   String get createOrderButton;
+
+  /// No description provided for @profileContactUs.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact us'**
+  String get profileContactUs;
+
+  /// No description provided for @deleteAccountButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get deleteAccountButton;
+
+  /// No description provided for @verificationCode.
+  ///
+  /// In en, this message translates to:
+  /// **'OTP code'**
+  String get verificationCode;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

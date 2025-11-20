@@ -110,7 +110,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get invalidPhone => 'Số điện thoại không hợp lệ';
 
   @override
-  String get enterVerificationCode => 'Nhập mã xác nhận';
+  String get enterVerificationCode => 'Nhập mã xác thực để xác nhận xoá tài khoản người dùng này';
 
   @override
   String get agreeTermsWarning => 'Bạn cần đồng ý với điều khoản sử dụng';
@@ -695,4 +695,13 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get createOrderButton => 'Tạo đơn vận chuyển';
+
+  @override
+  String get profileContactUs => 'Liên hệ với chúng tôi';
+
+  @override
+  String get deleteAccountButton => 'xoá tài khoản';
+
+  @override
+  String get verificationCode => 'Mã OTP';
 }

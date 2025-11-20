@@ -110,7 +110,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invalidPhone => 'Invalid phone number';
 
   @override
-  String get enterVerificationCode => 'Enter verification code';
+  String get enterVerificationCode => 'Enter the verification code to confirm deletion of this user account';
 
   @override
   String get agreeTermsWarning => 'You must agree to the terms of use';
@@ -230,7 +230,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logoutButton => 'Logout';
 
   @override
-  String get changeLanguage => 'Thay đổi ngôn ngữ';
+  String get changeLanguage => 'Change the language';
 
   @override
   String get rechargeTitle => 'Recharge Wallet';
@@ -695,4 +695,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get createOrderButton => 'Create Delivery Order';
+
+  @override
+  String get profileContactUs => 'Contact us';
+
+  @override
+  String get deleteAccountButton => 'Delete account';
+
+  @override
+  String get verificationCode => 'OTP code';
 }

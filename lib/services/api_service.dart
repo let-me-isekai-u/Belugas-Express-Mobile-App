@@ -359,5 +359,35 @@ class ApiService {
     return await http.put(url, headers: headers, body: jsonEncode({}));
   }
 
+  /// (25) API xóa tài khoản
+  static Future<http.Response> deleteAccount({
+    required String accessToken,
+    required String code,
+  }) async {
+    final url = Uri.parse("$_accountBaseUrl/delete");
+
+    final headers = {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer $accessToken",
+    };
+
+    final body = jsonEncode({
+      "code": code,
+    });
+
+    try {
+      final response = await http.post(url, headers: headers, body: body);
+      return response;
+    } catch (e) {
+      return http.Response(
+        jsonEncode({
+          "success": false,
+          "message": "Lỗi kết nối tới server: $e",
+        }),
+        500,
+      );
+    }
+  }
+
 
 }

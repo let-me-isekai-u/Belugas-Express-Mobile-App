@@ -363,7 +363,11 @@
   "cancel": "Huỷ",
   "confirm": "Xác nhận",
   "update": "Cập nhật",
-  "createOrderButton": "Tạo đơn vận chuyển"
+  "createOrderButton": "Tạo đơn vận chuyển",
+  "profileContactUs": "Liên hệ với chúng tôi",
+  "deleteAccountButton": "xoá tài khoản",
+  "verificationCode": "Mã OTP",
+  "enterVerificationCode": "Nhập mã xác thực để xác nhận xoá tài khoản người dùng này"
 
 
 
