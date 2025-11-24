@@ -370,7 +370,9 @@
 
       "verificationCode": "OTP code",
 
-      "enterVerificationCode": "Enter the verification code to confirm deletion of this user account"
+      "enterVerificationCode": "Enter the verification code to confirm deletion of this user account",
+      "confirmDeleteAccount": "Are you sure you want to delete this account?"
+
 
 
 

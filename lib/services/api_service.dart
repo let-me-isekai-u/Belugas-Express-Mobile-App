@@ -362,7 +362,6 @@ class ApiService {
   /// (25) API xóa tài khoản
   static Future<http.Response> deleteAccount({
     required String accessToken,
-    required String code,
   }) async {
     final url = Uri.parse("$_accountBaseUrl/delete");
 
@@ -371,12 +370,11 @@ class ApiService {
       "Authorization": "Bearer $accessToken",
     };
 
-    final body = jsonEncode({
-      "code": code,
-    });
-
     try {
-      final response = await http.post(url, headers: headers, body: body);
+      final response = await http.post(
+        url,
+        headers: headers,
+      );
       return response;
     } catch (e) {
       return http.Response(
@@ -388,6 +386,7 @@ class ApiService {
       );
     }
   }
+
 
 
 }

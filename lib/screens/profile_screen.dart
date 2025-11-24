@@ -21,7 +21,7 @@ class ProfileScreen extends StatelessWidget {
   });
 
   Future<void> _openZalo() async {
-    final Uri zaloUrl = Uri.parse('https://zalo.me/0932265471');
+    final Uri zaloUrl = Uri.parse('https://zalo.me/0986851160');
     if (await canLaunchUrl(zaloUrl)) {
       await launchUrl(zaloUrl, mode: LaunchMode.externalApplication);
     }
@@ -34,10 +34,17 @@ class ProfileScreen extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         leading: Icon(icon, color: Colors.blue[400]),
-        title: Text(title,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Serif')),
-        subtitle: Text(value,
-            style: const TextStyle(fontSize: 15, fontFamily: 'Serif')),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Serif',
+          ),
+        ),
+        subtitle: Text(
+          value,
+          style: const TextStyle(fontSize: 15, fontFamily: 'Serif'),
+        ),
       ),
     );
   }
@@ -50,10 +57,10 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Future<void> _showSnackBar(BuildContext context, String message) async {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
-  // Lấy token: ưu tiên key "accessToken" (như HomeModel dùng), có fallback
   Future<String> _getAccessTokenFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('accessToken') ??
@@ -63,28 +70,15 @@ class ProfileScreen extends StatelessWidget {
         '';
   }
 
-  Future<void> _showDeleteAccountDialog(BuildContext context) async {
+  /// ⭐ MỚI: Dialog chỉ hỏi xác nhận xoá, KHÔNG hỏi mã xác thực
+  Future<void> _showDeleteConfirmDialog(BuildContext context) async {
     final loc = AppLocalizations.of(context)!;
-    String code = "";
 
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         title: Text(loc.deleteAccountButton),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(loc.enterVerificationCode ?? "Nhập mã xác thực"),
-            const SizedBox(height: 10),
-            TextField(
-              onChanged: (v) => code = v,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: loc.verificationCode ?? "Mã xác thực",
-              ),
-            ),
-          ],
-        ),
+        content: Text(loc.confirmDeleteAccount),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -97,7 +91,8 @@ class ProfileScreen extends StatelessWidget {
               final accessToken = await _getAccessTokenFromPrefs();
 
               if (accessToken.isEmpty) {
-                await _showSnackBar(context, "Không tìm thấy token. Vui lòng đăng nhập lại.");
+                await _showSnackBar(
+                    context, "Không tìm thấy token. Vui lòng đăng nhập lại.");
                 return;
               }
 
@@ -105,30 +100,24 @@ class ProfileScreen extends StatelessWidget {
               showDialog(
                 context: context,
                 barrierDismissible: false,
-                builder: (_) => const Center(child: CircularProgressIndicator()),
+                builder: (_) =>
+                const Center(child: CircularProgressIndicator()),
               );
 
               try {
-                debugPrint("Deleting account: token length = ${accessToken.length}");
-
                 final response =
-                await ApiService.deleteAccount(accessToken: accessToken, code: code);
+                await ApiService.deleteAccount(accessToken: accessToken);
 
-                Navigator.pop(context); // đóng loading
+                Navigator.pop(context); // close loading
 
                 String message = "Có lỗi xảy ra";
+
                 try {
                   final body = jsonDecode(response.body);
                   if (body is Map && body.containsKey("message")) {
-                    message = body["message"]?.toString() ?? message;
-                  } else if (body is Map && body.containsKey("success") && body["success"] == true) {
-                    message = "Thành công";
-                  } else {
-                    message = response.body;
+                    message = body["message"].toString();
                   }
-                } catch (_) {
-                  message = response.body.isNotEmpty ? response.body : message;
-                }
+                } catch (_) {}
 
                 if (response.statusCode == 200) {
                   _logout(context);
@@ -136,15 +125,13 @@ class ProfileScreen extends StatelessWidget {
                   await _showSnackBar(context, message);
                 }
               } catch (e) {
-                try {
-                  Navigator.pop(context);
-                } catch (_) {}
+                Navigator.pop(context);
                 await _showSnackBar(context, "Lỗi kết nối: $e");
               }
             },
-            child: Text(
-              loc.confirm ?? "Confirm",
-              style: const TextStyle(color: Colors.red),
+            child: const Text(
+              "Xoá",
+              style: TextStyle(color: Colors.red),
             ),
           ),
         ],
@@ -152,55 +139,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _sendVerificationAndDelete(BuildContext context) async {
-    // Hiện loading
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
-    );
-
-    try {
-      final response = await ApiService.sendVerificationCode(email: email);
-
-      Navigator.pop(context); // đóng loading
-
-      if (response.statusCode == 200) {
-        bool ok = true;
-        try {
-          final body = jsonDecode(response.body);
-          if (body is Map && body.containsKey("success")) {
-            ok = body["success"] == true;
-          }
-        } catch (_) {}
-
-        if (ok) {
-          await _showDeleteAccountDialog(context);
-        } else {
-          String msg = "Không thể gửi mã xác thực";
-          try {
-            final body = jsonDecode(response.body);
-            if (body is Map && body.containsKey("message")) msg = body["message"].toString();
-          } catch (_) {}
-          await _showSnackBar(context, msg);
-        }
-      } else {
-        String msg = "Không thể gửi mã xác thực";
-        try {
-          final body = jsonDecode(response.body);
-          if (body is Map && body.containsKey("message")) msg = body["message"].toString();
-        } catch (_) {}
-        await _showSnackBar(context, msg);
-      }
-    } catch (e) {
-      try {
-        Navigator.pop(context);
-      } catch (_) {}
-      await _showSnackBar(context, "Lỗi kết nối: $e");
-    }
-  }
-
-  // Helper: tạo danh sách PopupMenuItems để dùng ở cả showMenu
+  /// Popup menu items
   List<PopupMenuEntry<int>> _buildMenuItems(AppLocalizations loc) {
     return [
       PopupMenuItem(
@@ -244,21 +183,27 @@ class ProfileScreen extends StatelessWidget {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         backgroundColor: Colors.blue[300],
-        title: Text(loc.profileTitle, style: const TextStyle(fontFamily: 'Serif')),
+        title: Text(loc.profileTitle,
+            style: const TextStyle(fontFamily: 'Serif')),
         actions: [
-          // Thay PopupMenuButton bằng IconButton + showMenu để await khi menu đóng
           Builder(
             builder: (context) {
               return IconButton(
-                icon: const Icon(Icons.settings, color: Colors.white, size: 30),
+                icon:
+                const Icon(Icons.settings, color: Colors.white, size: 30),
                 onPressed: () async {
-                  // Tính vị trí menu dựa trên icon widget
-                  final RenderBox button = context.findRenderObject() as RenderBox;
-                  final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
-                  final RelativeRect position = RelativeRect.fromRect(
+                  final RenderBox button =
+                  context.findRenderObject() as RenderBox;
+                  final RenderBox overlay = Overlay.of(context)
+                      .context
+                      .findRenderObject() as RenderBox;
+
+                  final position = RelativeRect.fromRect(
                     Rect.fromPoints(
                       button.localToGlobal(Offset.zero, ancestor: overlay),
-                      button.localToGlobal(Offset(button.size.width, button.size.height), ancestor: overlay),
+                      button.localToGlobal(
+                          Offset(button.size.width, button.size.height),
+                          ancestor: overlay),
                     ),
                     Offset.zero & overlay.size,
                   );
@@ -267,55 +212,26 @@ class ProfileScreen extends StatelessWidget {
                     context: context,
                     position: position,
                     items: _buildMenuItems(loc),
-                    // color: Colors.white, // nếu muốn style
                     elevation: 4,
                   );
 
-                  // showMenu returns only after menu is dismissed, so safe to act now
-                  if (selected == null) {
-                    return; // user dismissed menu
-                  }
+                  if (selected == null) return;
 
                   if (selected == 1) {
-                    // Đổi ngôn ngữ: capture current locale và gọi onLocaleChange
                     final currentLocale = Localizations.localeOf(context);
                     final newLocale = currentLocale.languageCode == 'vi'
                         ? const Locale('en')
                         : const Locale('vi');
                     onLocaleChange?.call(newLocale);
                   } else if (selected == 2) {
-                    Navigator.push(context, MaterialPageRoute(
-                      builder: (_) => ChangePasswordScreen(email: email),
-                    ));
-                  } else if (selected == 3) {
-                    // Gửi mã xác thực trước khi show dialog
-                    // Hiển thị loading
-                    showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (_) => const Center(child: CircularProgressIndicator()),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ChangePasswordScreen(email: email),
+                      ),
                     );
-
-                    try {
-                      final response = await ApiService.sendVerificationCode(email: email);
-                      Navigator.pop(context); // close loading
-
-                      if (response.statusCode == 200) {
-                        _showDeleteAccountDialog(context);
-                      } else {
-                        String msg = "Không thể gửi mã xác thực";
-                        try {
-                          final body = jsonDecode(response.body);
-                          if (body is Map && body.containsKey("message")) msg = body["message"].toString();
-                        } catch (_) {}
-                        await _showSnackBar(context, msg);
-                      }
-                    } catch (e) {
-                      try {
-                        Navigator.pop(context);
-                      } catch (_) {}
-                      await _showSnackBar(context, "Lỗi kết nối: $e");
-                    }
+                  } else if (selected == 3) {
+                    _showDeleteConfirmDialog(context);
                   }
                 },
               );
@@ -330,7 +246,8 @@ class ProfileScreen extends StatelessWidget {
             CircleAvatar(
               radius: 45,
               backgroundColor: Colors.blue[200],
-              child: const Icon(Icons.person, size: 60, color: Colors.white),
+              child: const Icon(Icons.person,
+                  size: 60, color: Colors.white),
             ),
             const SizedBox(height: 16),
             _buildInfoTile(loc.profileName, fullName, Icons.badge),
@@ -369,7 +286,8 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              padding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Column(
                 children: [
                   SizedBox(
@@ -377,14 +295,18 @@ class ProfileScreen extends StatelessWidget {
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red[400],
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        padding:
+                        const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
                       ),
                       onPressed: () => _logout(context),
                       icon: const Icon(Icons.logout),
-                      label: Text(loc.logoutButton,
-                          style: const TextStyle(fontSize: 16, fontFamily: 'Serif')),
+                      label: Text(
+                        loc.logoutButton,
+                        style: const TextStyle(
+                            fontSize: 16, fontFamily: 'Serif'),
+                      ),
                     ),
                   ),
                 ],

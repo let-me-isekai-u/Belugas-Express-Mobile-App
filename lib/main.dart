@@ -80,7 +80,7 @@ class _BegulasAppState extends State<BegulasApp> {
           return supportedLocales.first;
         },
 
-        // ⭐ Truyền setLocale vào Splash để Login nhận được
+
         home: SplashScreen(onLocaleChange: setLocale),
 
         routes: {

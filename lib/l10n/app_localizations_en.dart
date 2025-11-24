@@ -704,4 +704,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get verificationCode => 'OTP code';
+
+  @override
+  String get confirmDeleteAccount => 'Are you sure you want to delete this account?';
 }

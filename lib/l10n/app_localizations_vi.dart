@@ -704,4 +704,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get verificationCode => 'Mã OTP';
+
+  @override
+  String get confirmDeleteAccount => 'Bạn có chắc chắn xoá tài khoản này không?';
 }

@@ -367,7 +367,8 @@
   "profileContactUs": "Liên hệ với chúng tôi",
   "deleteAccountButton": "xoá tài khoản",
   "verificationCode": "Mã OTP",
-  "enterVerificationCode": "Nhập mã xác thực để xác nhận xoá tài khoản người dùng này"
+  "enterVerificationCode": "Nhập mã xác thực để xác nhận xoá tài khoản người dùng này",
+  "confirmDeleteAccount": "Bạn có chắc chắn xoá tài khoản này không?"
 
 
 
