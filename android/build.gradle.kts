@@ -1,3 +1,16 @@
+// android/build.gradle.kts
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        // Bổ sung classpath cho Google Services
+        classpath("com.google.gms:google-services:4.4.2") // hoặc bản mới nhất
+    }
+}
+
 allprojects {
     repositories {
         google()

@@ -85,9 +85,13 @@ class ApiService {
   static Future<http.Response> login({
     required String phoneNumber,
     required String password,
+    required String deviceToken,
   }) async {
     final url = Uri.parse("$_accountBaseUrl/login");
-    final body = jsonEncode({"phoneNumber": phoneNumber, "password": password});
+    final body = jsonEncode({"phoneNumber": phoneNumber,
+      "password": password,
+      "deviceToken": deviceToken,
+    });
     return await http.post(url,
         body: body, headers: {"Content-Type": "application/json"});
   }

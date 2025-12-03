@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "776329323066",
+    "project_id": "beluga-express-0111233232",
+    "storage_bucket": "beluga-express-0111233232.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:776329323066:android:e0a2c4f9991e0e94908b03",
+        "android_client_info": {
+          "package_name": "com.belugaexpress.beluga"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAAZaQMJbEYCAC5HwAs319LVdLOrT5UWT0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

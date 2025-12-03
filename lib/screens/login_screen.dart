@@ -6,6 +6,7 @@ import '../screens/register_screen.dart';
 import '../screens/forgot_password_screen.dart';
 import '../screens/home_screen.dart';
 import '../l10n/app_localizations.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class LoginScreen extends StatefulWidget {
   final void Function(Locale)? onLocaleChange;
@@ -30,7 +31,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     _logoController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
-    )..repeat(reverse: true); // lặp lại nhún nhẹ liên tục
+    )..repeat(reverse: true);
   }
 
   @override
@@ -70,8 +71,30 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     setState(() => _isLoading = true);
 
     try {
-      final response = await ApiService.login(phoneNumber: phone, password: password);
+      // 1️⃣ Request permission iOS
+      await FirebaseMessaging.instance.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
 
+      // 2️⃣ Lấy device token
+      final deviceToken = await FirebaseMessaging.instance.getToken();
+
+      if (deviceToken == null) {
+        _showSnackBar("Không lấy được device token, vui lòng thử lại", Colors.red);
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      // 3️⃣ Gọi API login kèm deviceToken
+      final response = await ApiService.login(
+        phoneNumber: phone,
+        password: password,
+        deviceToken: deviceToken,
+      );
+
+      // 4️⃣ Xử lý kết quả
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
@@ -122,7 +145,6 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
       body: SafeArea(
         child: Column(
           children: [
-            // 🔹 Nút đổi ngôn ngữ lên trên cùng
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Align(
@@ -153,7 +175,6 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                 ),
               ),
             ),
-
             Expanded(
               child: Center(
                 child: SingleChildScrollView(
@@ -162,8 +183,6 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const SizedBox(height: 20),
-
-                      // 🔹 Logo Beluga có animation
                       ScaleTransition(
                         scale: Tween<double>(begin: 1.0, end: 1.05).animate(
                           CurvedAnimation(parent: _logoController, curve: Curves.easeInOut),
@@ -191,9 +210,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 12),
-
                       Text(
                         loc.appTitle,
                         style: const TextStyle(
@@ -203,13 +220,11 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-
                       const SizedBox(height: 40),
                       _buildTextField(phoneController, loc.phone, Icons.phone, false),
                       const SizedBox(height: 16),
                       _buildTextField(passwordController, loc.password, Icons.lock, true),
                       const SizedBox(height: 20),
-
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.lightBlue[300],
@@ -226,9 +241,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                         )
                             : Text(loc.login),
                       ),
-
                       const SizedBox(height: 16),
-
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [

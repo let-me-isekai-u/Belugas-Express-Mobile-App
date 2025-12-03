@@ -7,15 +7,26 @@ import 'l10n/app_localizations.dart';
 import 'app_theme.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
-import 'screens/Contructor/Contractor_home_screen.dart';
 import 'screens/splash_screen.dart';
 import 'models/home_model.dart';
 import 'models/contructor_home_model.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+/// Background message handler
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  print('📩 Background message received: ${message.messageId}');
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
 
-  // ⭐ Đọc ngôn ngữ đã lưu, nếu chưa có → tiếng Việt
+  // Set background message handler
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
+  // Lấy ngôn ngữ đã lưu, nếu chưa có → tiếng Việt
   final prefs = await SharedPreferences.getInstance();
   final savedLang = prefs.getString('languageCode') ?? 'vi';
 
@@ -37,9 +48,40 @@ class _BegulasAppState extends State<BegulasApp> {
   void initState() {
     super.initState();
     _locale = widget.initialLocale;
+
+    _setupFirebaseMessaging();
   }
 
-  // ⭐ Hàm đổi ngôn ngữ & lưu lại SharedPreferences
+  /// Cấu hình Firebase Messaging
+  void _setupFirebaseMessaging() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+    // Yêu cầu quyền iOS
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+    print('📩 Notification permission status: ${settings.authorizationStatus}');
+
+    // Lấy device token
+    String? token = await messaging.getToken();
+    print('📩 FCM token: $token');
+
+    // Foreground messages
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('📩 Foreground message received: ${message.notification?.title}');
+    });
+
+    // Khi app được mở từ notification
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('📩 Notification clicked! ${message.notification?.title}');
+      // Có thể điều hướng đến trang cụ thể
+      // Navigator.pushNamed(context, '/home');
+    });
+  }
+
+  /// Hàm đổi ngôn ngữ & lưu lại SharedPreferences
   void setLocale(Locale locale) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('languageCode', locale.languageCode);
@@ -58,9 +100,8 @@ class _BegulasAppState extends State<BegulasApp> {
         theme: AppTheme.theme,
         debugShowCheckedModeBanner: false,
 
-        // ⭐ Áp dụng locale toàn app
+        // Áp dụng locale toàn app
         locale: _locale,
-
         supportedLocales: AppLocalizations.supportedLocales,
         localizationsDelegates: const [
           AppLocalizations.delegate,
@@ -68,7 +109,6 @@ class _BegulasAppState extends State<BegulasApp> {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
-
         localeResolutionCallback: (locale, supportedLocales) {
           if (locale != null) {
             for (var supportedLocale in supportedLocales) {
@@ -80,16 +120,13 @@ class _BegulasAppState extends State<BegulasApp> {
           return supportedLocales.first;
         },
 
-
         home: SplashScreen(onLocaleChange: setLocale),
 
         routes: {
           '/home': (_) => HomeScreen(
-              accessToken: '',
-              onLocaleChange: setLocale,
+            accessToken: '',
+            onLocaleChange: setLocale,
           ),
-          '/contractorHome': (_) => ContractorHomeScreen(onLocaleChange: setLocale),
-
           '/login': (_) => LoginScreen(onLocaleChange: setLocale),
         },
       ),

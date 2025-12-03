@@ -2,7 +2,7 @@ name: begulas_express
 description: "A new Flutter project."
 publish_to: 'none'
 
-version: 1.0.0+2
+version: 1.0.2+3
 
 environment:
   sdk: ^3.9.0
@@ -21,6 +21,9 @@ dependencies:
     sdk: flutter
   rename_app: ^1.6.5
   flutter_launcher_icons: ^0.14.4
+  firebase_core: ^4.2.1
+  firebase_messaging: ^16.0.4
+
 
 dev_dependencies:
   flutter_test:
@@ -42,7 +45,7 @@ flutter_icons:
   android: true
   ios: true
   image_path: "lib/assets/icons/OutsideLogo.jpg"
-  adaptive_icon_background: "#ffffff"   # dùng cho Android 12+
+  adaptive_icon_background: "#ffffff"
   adaptive_icon_foreground: "lib/assets/icons/OutsideLogo.jpg"
 
 

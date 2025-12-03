@@ -63,7 +63,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
     qrDescription = description;
     qrUrl =
     //https://img.vietqr.io/image/TCB-65388888-compact2.png?amount=${amount.toStringAsFixed(0)}&addInfo=${description}&accountName=CTY%20CP%20CN%20VA%20DV%20TT%20THE%20BELUGAS
-    "https://img.vietqr.io/image/TCB-65388888-compact2.png?amount=${amount.toStringAsFixed(0)}&addInfo=${description}&accountName=CTY%20CP%20CN%20VA%20DV%20TT%20THE%20BELUGAS";
+    "https://img.vietqr.io/image/MB-246878888-compact2.png?amount=${amount.toStringAsFixed(0)}&addInfo=${description}&accountName=CTY%20CP%20CN%20VA%20DV%20TT%20THE%20BELUGAS";
 /* đây là ảnh QR cũ: https://img.vietqr.io/image/MB-34567200288888-compact2.png?amount=${amount.toStringAsFixed(0)}&addInfo=$description&accountName=LY%20NHAT%20ANH
 * */
     if (!mounted) return;
@@ -158,7 +158,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
           children: [
             Text(loc.rechargeQRCodeTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.blue)),
             const SizedBox(height: 16),
-            Image.network(qrUrl, height: 280, width: 280, fit: BoxFit.contain),
+            Image.network(qrUrl, height: 330, width: 330, fit: BoxFit.contain),
             const SizedBox(height: 10),
             Text(loc.rechargeQRCodeAmount(rechargeAmount?.toStringAsFixed(0) ?? "0"), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             Text(loc.rechargeQRCodeContent(qrDescription), style: const TextStyle(color: Colors.orange, fontSize: 16)),
