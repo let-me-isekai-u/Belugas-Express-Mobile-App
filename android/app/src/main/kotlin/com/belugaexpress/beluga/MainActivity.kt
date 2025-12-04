@@ -1,4 +1,4 @@
-package com.belugaexpress.begula
+package com.belugaexpress.beluga
 
 import io.flutter.embedding.android.FlutterActivity
 
