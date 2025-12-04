@@ -18,7 +18,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.belugaexpress.begula"
+    namespace = "com.belugaexpress.beluga"
     compileSdk = 36
     ndkVersion = flutter.ndkVersion
 

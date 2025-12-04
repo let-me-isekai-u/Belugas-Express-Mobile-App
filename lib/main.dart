@@ -10,8 +10,16 @@ import 'screens/home_screen.dart';
 import 'screens/splash_screen.dart';
 import 'models/home_model.dart';
 import 'models/contructor_home_model.dart';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+
+// Thêm dòng này cho Android Notification Channel
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+/// Plugin dùng cho notification trên Android
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+FlutterLocalNotificationsPlugin();
 
 /// Background message handler
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -35,6 +43,7 @@ void main() async {
 
 class BegulasApp extends StatefulWidget {
   final Locale initialLocale;
+
   const BegulasApp({super.key, required this.initialLocale});
 
   @override
@@ -52,11 +61,34 @@ class _BegulasAppState extends State<BegulasApp> {
     _setupFirebaseMessaging();
   }
 
-  /// Cấu hình Firebase Messaging
+  /// Cấu hình Firebase Messaging + Notification Channel Android
   void _setupFirebaseMessaging() async {
     FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-    // Yêu cầu quyền iOS
+    // (1) Tạo notification channel cho Android
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      'high_importance_channel', // phải trùng AndroidManifest
+      'High Importance Notifications',
+      importance: Importance.high,
+    );
+
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
+
+    // (2) Khởi tạo local notification (Android)
+    const AndroidInitializationSettings initializationSettingsAndroid =
+    AndroidInitializationSettings('@mipmap/launcher_icon');
+
+    const InitializationSettings initializationSettings =
+    InitializationSettings(
+      android: initializationSettingsAndroid,
+    );
+
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+    // (3) Yêu cầu quyền (iOS)
     NotificationSettings settings = await messaging.requestPermission(
       alert: true,
       badge: true,
@@ -64,20 +96,18 @@ class _BegulasAppState extends State<BegulasApp> {
     );
     print('📩 Notification permission status: ${settings.authorizationStatus}');
 
-    // Lấy device token
+    // (4) Lấy device token
     String? token = await messaging.getToken();
     print('📩 FCM token: $token');
 
-    // Foreground messages
+    // (5) Foreground messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('📩 Foreground message received: ${message.notification?.title}');
     });
 
-    // Khi app được mở từ notification
+    // (6) Notification mở app
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       print('📩 Notification clicked! ${message.notification?.title}');
-      // Có thể điều hướng đến trang cụ thể
-      // Navigator.pushNamed(context, '/home');
     });
   }
 

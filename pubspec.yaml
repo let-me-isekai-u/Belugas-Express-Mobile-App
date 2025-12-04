@@ -2,7 +2,7 @@ name: begulas_express
 description: "A new Flutter project."
 publish_to: 'none'
 
-version: 1.0.2+3
+version: 1.0.3+4
 
 environment:
   sdk: ^3.9.0
@@ -23,6 +23,7 @@ dependencies:
   flutter_launcher_icons: ^0.14.4
   firebase_core: ^4.2.1
   firebase_messaging: ^16.0.4
+  flutter_local_notifications: ^17.0.0
 
 
 dev_dependencies:
