@@ -136,140 +136,78 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     }
   }
 
+
+  // Trong _LoginScreenState
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final theme = Theme.of(context); // Lấy Theme để dùng màu chủ đạo
 
     return Scaffold(
-      backgroundColor: Colors.blue[700],
+      // Bỏ backgroundColor ở đây vì chúng ta dùng Stack
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Align(
-                alignment: Alignment.topRight,
-                child: TextButton(
-                  onPressed: _toggleLanguage,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Image.asset(
-                        Localizations.localeOf(context).languageCode == 'vi'
-                            ? 'lib/assets/icons/vietnam.png'
-                            : 'lib/assets/icons/united-states.png',
-                        width: 38,
-                        height: 38,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        Localizations.localeOf(context).languageCode == 'vi' ? 'VI' : 'EN',
-                        style: const TextStyle(
-                          fontSize: 23,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            // 1. PHẦN NỀN TRÊN (Màu Chủ Đạo - Xanh Blue[700] cũ)
+            Container(
+              height: MediaQuery.of(context).size.height * 0.4,
+              decoration: BoxDecoration(
+                color: Colors.blue[700],
               ),
             ),
-            Expanded(
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 20),
-                      ScaleTransition(
-                        scale: Tween<double>(begin: 1.0, end: 1.05).animate(
-                          CurvedAnimation(parent: _logoController, curve: Curves.easeInOut),
+
+            // 2. KHU VỰC CHÍNH CÓ CUỘN (Tất cả nội dung)
+            SingleChildScrollView(
+              // Padding ngang rộng hơn cho tổng thể đẹp hơn
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  // NÚT ĐỔI NGÔN NGỮ
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10, bottom: 20),
+                    child: Align(
+                      alignment: Alignment.topRight,
+                      child: TextButton(
+                        onPressed: _toggleLanguage,
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.25),
-                                blurRadius: 16,
-                                spreadRadius: 2,
-                                offset: const Offset(0, 6),
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: Image.asset(
-                              'lib/assets/icons/LOGO BELUGA FINAL.png',
-                              width: 140,
-                              height: 140,
-                              fit: BoxFit.contain,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Image.asset(
+                              Localizations.localeOf(context).languageCode == 'vi'
+                                  ? 'lib/assets/icons/vietnam.png'
+                                  : 'lib/assets/icons/united-states.png',
+                              width: 32, // Nhỏ hơn chút cho tinh tế
+                              height: 32,
                             ),
-                          ),
+                            const SizedBox(width: 6),
+                            Text(
+                              Localizations.localeOf(context).languageCode == 'vi' ? 'VI' : 'EN',
+                              style: const TextStyle(
+                                fontSize: 18, // Nhỏ hơn chút
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Text(
-                        loc.appTitle,
-                        style: const TextStyle(
-                          fontFamily: 'Serif',
-                          color: Colors.white,
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 40),
-                      _buildTextField(phoneController, loc.phone, Icons.phone, false),
-                      const SizedBox(height: 16),
-                      _buildTextField(passwordController, loc.password, Icons.lock, true),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.lightBlue[300],
-                          minimumSize: const Size(double.infinity, 48),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          elevation: 3,
-                        ),
-                        onPressed: _isLoading ? null : () => _login(context),
-                        child: _isLoading
-                            ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                        )
-                            : Text(loc.login),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
-                              );
-                            },
-                            child: Text(loc.forgotPassword, style: const TextStyle(color: Colors.white)),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => RegisterScreen(onLocaleChange: widget.onLocaleChange),
-                                ),
-                              );
-                            },
-                            child: Text(loc.register, style: const TextStyle(color: Colors.white)),
-                          ),
-                        ],
-                      ),
-                    ],
+                    ),
                   ),
-                ),
+
+                  // LOGO VÀ TIÊU ĐỀ
+                  _buildLogoSection(theme, loc),
+
+                  const SizedBox(height: 30),
+
+                  // CARD FORM ĐĂNG NHẬP
+                  _buildLoginFormCard(theme, loc, context),
+
+                  const SizedBox(height: 20),
+                ],
               ),
             ),
           ],
@@ -278,21 +216,153 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     );
   }
 
+// Hàm tách biệt phần Logo và Tiêu đề
+  Widget _buildLogoSection(ThemeData theme, AppLocalizations loc) {
+    return Column(
+      children: [
+        // Logo với hiệu ứng Scale
+        ScaleTransition(
+          scale: Tween<double>(begin: 1.0, end: 1.05).animate(
+            CurvedAnimation(parent: _logoController, curve: Curves.easeInOut),
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20), // Bo góc lớn hơn
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3), // Đổ bóng nhẹ
+                  blurRadius: 20,
+                  spreadRadius: 3,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Image.asset(
+                'lib/assets/icons/LOGO BELUGA FINAL.png',
+                width: 150, // Lớn hơn chút
+                height: 150,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        // Tiêu đề
+        Text(
+          loc.appTitle,
+          style: const TextStyle(
+            fontFamily: 'Serif',
+            color: Colors.white,
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            shadows: [
+              Shadow(
+                color: Colors.black38,
+                offset: Offset(1, 1),
+                blurRadius: 2,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+// Hàm tách biệt phần Card Form
+  Widget _buildLoginFormCard(ThemeData theme, AppLocalizations loc, BuildContext context) {
+    return Card(
+      elevation: 8,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20), // Bo góc lớn
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Tiêu đề form
+            Text(
+              loc.loginTitle, // Thêm loc.key cho "Đăng nhập" nếu có
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.primary, // Màu chủ đạo
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+
+            // INPUTS
+            _buildTextField(phoneController, loc.phone, Icons.phone, false),
+            const SizedBox(height: 16),
+            _buildTextField(passwordController, loc.password, Icons.lock, true),
+            const SizedBox(height: 24),
+
+            // LOGIN BUTTON
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.secondary, // Dùng màu Secondary cho nút chính
+                minimumSize: const Size(double.infinity, 50),
+                elevation: 5,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                foregroundColor: Colors.white,
+                textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              onPressed: _isLoading ? null : () => _login(context),
+              child: _isLoading
+                  ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+                  : Text(loc.login),
+            ),
+            const SizedBox(height: 16),
+
+            // FOOTER LINKS (ĐÃ SỬA LỖI OVERFLOW VÀ BỐ CỤC)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextButton(
+                  onPressed: _goToForgotPassword, // Sử dụng hàm riêng cho điều hướng
+                  child: Text(loc.forgotPassword, style: TextStyle(color: theme.colorScheme.primary)),
+                ),
+                TextButton(
+                  onPressed: _goToRegister, // Sử dụng hàm riêng cho điều hướng
+                  child: Text(loc.register, style: TextStyle(color: theme.colorScheme.secondary)),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Hàm _buildTextField (Trong _LoginScreenState)
   Widget _buildTextField(TextEditingController controller, String hint, IconData icon, bool isPassword) {
+    final theme = Theme.of(context);
     return TextField(
       controller: controller,
       obscureText: isPassword ? _obscurePassword : false,
       keyboardType: isPassword ? TextInputType.text : TextInputType.phone,
+      style: const TextStyle(fontSize: 16, color: Colors.black87),
       decoration: InputDecoration(
         filled: true,
-        fillColor: Colors.white,
+        fillColor: Colors.grey.shade100, // Nền xám nhạt tinh tế hơn
         hintText: hint,
-        prefixIcon: Icon(icon, color: Colors.blue[700]),
+        prefixIcon: Icon(icon, color: theme.colorScheme.primary), // Icon màu chủ đạo
         suffixIcon: isPassword
             ? IconButton(
           icon: Icon(
             _obscurePassword ? Icons.visibility_off : Icons.visibility,
-            color: Colors.grey,
+            color: theme.colorScheme.secondary, // Icon màu secondary
           ),
           onPressed: () {
             setState(() {
@@ -303,8 +373,29 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
             : null,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide.none, // Bỏ viền cố định
         ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: theme.colorScheme.primary, width: 2), // Viền khi focus
+        ),
+      ),
+    );
+  }
+
+  // Hàm điều hướng
+  void _goToForgotPassword() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+    );
+  }
+
+  void _goToRegister() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => RegisterScreen(onLocaleChange: widget.onLocaleChange),
       ),
     );
   }

@@ -707,4 +707,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get confirmDeleteAccount => 'Are you sure you want to delete this account?';
+
+  @override
+  String get loginTitle => 'Beluga Express Login';
+
+  @override
+  String get personalInfo => 'Personal Information';
+
+  @override
+  String get securityInfo => 'Security';
+
+  @override
+  String get contactAndOther => 'Contacts & Other';
+
+  @override
+  String get verification => 'Email Verification';
+
+  @override
+  String get quickActionsTitle => 'Quick action';
 }

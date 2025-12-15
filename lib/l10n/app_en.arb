@@ -371,7 +371,15 @@
       "verificationCode": "OTP code",
 
       "enterVerificationCode": "Enter the verification code to confirm deletion of this user account",
-      "confirmDeleteAccount": "Are you sure you want to delete this account?"
+      "confirmDeleteAccount": "Are you sure you want to delete this account?",
+      "loginTitle": "Login to Beluga Express",
+
+      "loginTitle": "Beluga Express Login",
+      "personalInfo": "Personal Information",
+      "securityInfo": "Security",
+      "contactAndOther": "Contacts & Other",
+      "verification": "Email Verification",
+      "quickActionsTitle": "Quick action"
 
 
 

@@ -707,4 +707,22 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get confirmDeleteAccount => 'Bạn có chắc chắn xoá tài khoản này không?';
+
+  @override
+  String get loginTitle => 'Đăng nhập Beluga Express';
+
+  @override
+  String get personalInfo => 'Thông tin cá nhân';
+
+  @override
+  String get securityInfo => 'Bảo mật';
+
+  @override
+  String get contactAndOther => 'Liên hệ & Khác';
+
+  @override
+  String get verification => 'Xác thực Email';
+
+  @override
+  String get quickActionsTitle => 'Thao tác nhanh';
 }

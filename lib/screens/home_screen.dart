@@ -119,37 +119,88 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
     );
   }
 
+  // Trong _HomeScreenState
   Widget _buildCustomAppBar(HomeModel model, AppLocalizations loc) {
+    // Thay đổi gradient nhẹ nhàng và thêm hiệu ứng bo góc phía dưới
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF2196F3), Color(0xFF64B5F6)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+      decoration: BoxDecoration(
+        color: Colors.blue[700], // Giữ màu nền đậm
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(30),
+          bottomRight: Radius.circular(30),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 40, bottom: 16),
+      padding: const EdgeInsets.fromLTRB(20, 50, 20, 20), // Padding trên lớn hơn
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // THÔNG TIN CHÀO MỪNG VÀ VÍ
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                model.isLoading
-                    ? const SizedBox(height: 28, child: LinearProgressIndicator(color: Colors.white))
-                    : Text(
-                  model.fullName ?? loc.defaultUserName,
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                Text(
+                  loc.welcomeTitle,
+                  style: const TextStyle(fontSize: 15, color: Colors.white70),
+                ),
+                Text(
+                  "Beluga Express", 
+                  style: const TextStyle(fontSize: 15, color: Colors.white70),
                 ),
                 const SizedBox(height: 4),
-                if (!model.isLoading)
-                  Text(
-                    model.wallet != null ? loc.walletLabel(model.wallet!.toStringAsFixed(0)) : loc.walletLabel('N/A'),
-                    style: const TextStyle(fontSize: 15, color: Colors.white70),
+
+                // Tên người dùng
+                model.isLoading
+                    ? const SizedBox(
+                  height: 28,
+                  child: LinearProgressIndicator(color: Colors.white),
+                )
+                    : Text(
+                  model.fullName ?? loc.defaultUserName,
+                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                  overflow: TextOverflow.ellipsis,
+                ),
+
+                const SizedBox(height: 15),
+
+                // Ví tiền (Được làm nổi bật hơn)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4),
+                    ],
                   ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.account_balance_wallet, color: Colors.blue[700], size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        model.wallet != null
+                            ? loc.walletLabel(model.wallet!.toStringAsFixed(0))
+                            : loc.walletLabel('0'),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue[700],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -158,58 +209,81 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
     );
   }
 
+  // Trong _HomeScreenState
   Widget _buildWelcome(AppLocalizations loc) {
     return Center(
       key: const ValueKey('welcome'),
       child: AnimatedOpacity(
         opacity: _opacity,
-        duration: const Duration(seconds: 2),
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.9),
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(color: Colors.blue.withOpacity(0.15), blurRadius: 18, offset: const Offset(0, 8)),
-            ],
-          ),
+        duration: const Duration(seconds: 1), // Giảm thời gian animation cho mượt
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 20),
-              Text(
-                loc.welcomeTitle,
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w500, color: Colors.blue[300], fontFamily: 'Serif'),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                loc.welcomeAppName,
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.blue[700], fontFamily: 'Serif', letterSpacing: 1.2),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                loc.welcomeMessage,
-                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 28),
-
-              // Nút được đổi tên:
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => CreateOrderScreen(accessToken: widget.accessToken)));
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue[600],
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  elevation: 3,
-                ),
+              // Tiêu đề Dashboard
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0, bottom: 15),
                 child: Text(
-                  loc.createOrderButton,
-                  style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
+                  loc.quickActionsTitle,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[800],
+                  ),
+                ),
+              ),
+
+              // Lưới các nút hành động nhanh
+              Expanded(
+                child: GridView.count(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 15,
+                  mainAxisSpacing: 15,
+                  childAspectRatio: 1.2, // Tỷ lệ chiều rộng/chiều cao
+                  children: [
+                    // 1. TẠO ĐƠN (Nút chính)
+                    _buildActionButton(
+                      context,
+                      loc.createOrderButton,
+                      Icons.add_location_alt_rounded,
+                      Colors.blue.shade600,
+                          () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => CreateOrderScreen(accessToken: widget.accessToken)),
+                        );
+                      },
+                    ),
+
+                    // 2. NẠP TIỀN (Liên kết đến Tab 1)
+                    _buildActionButton(
+                      context,
+                      loc.homeTabRecharge,
+                      Icons.payments_rounded,
+                      Colors.green.shade600,
+                          () => _onItemTapped(1),
+                    ),
+
+                    // 3. ĐƠN HÀNG CỦA TÔI (Liên kết đến Tab 2)
+                    _buildActionButton(
+                      context,
+                      loc.homeTabOrders,
+                      Icons.list_alt,
+                      Colors.orange.shade600,
+                          () => _onItemTapped(2),
+                    ),
+
+                    // 4. LỊCH SỬ GIAO DỊCH (Liên kết đến Tab 3)
+                    _buildActionButton(
+                      context,
+                      loc.homeTabTrade,
+                      Icons.history,
+                      Colors.purple.shade600,
+                          () => _onItemTapped(3),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -219,15 +293,66 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
     );
   }
 
+// Hàm mới: Widget cho các nút hành động nhanh
+  Widget _buildActionButton(
+      BuildContext context,
+      String title,
+      IconData icon,
+      Color color,
+      VoidCallback onTap,
+      ) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
+      child: Card(
+        elevation: 5,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            color: Colors.white,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: color, size: 30),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.grey[800],
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+
+  // Trong _HomeScreenState
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
 
     final tabs = [
       {'icon': Icons.home, 'label': loc.homeTabHome},
       {'icon': Icons.account_balance_wallet, 'label': loc.homeTabRecharge},
-      // Tab tạo đơn đã bị xoá theo yêu cầu
-      // **Sửa lỗi**: không dùng _selectedIndex = 2 để mở màn tạo đơn nữa, thay bằng push để tránh mất trạng thái tab bar.
       {'icon': Icons.list_alt, 'label': loc.homeTabOrders},
       {'icon': Icons.receipt_long, 'label': loc.homeTabTrade},
       {'icon': Icons.person, 'label': loc.homeTabProfile},
@@ -236,38 +361,43 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
     return Consumer<HomeModel>(builder: (context, model, _) {
       return Container(
         decoration: const BoxDecoration(
+          // Giữ gradient nền cho toàn màn hình
           gradient: LinearGradient(
-            colors: [Color(0xFFB3C6E7), Color(0xFFE3F0FF)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            colors: [Color(0xFFE3F0FF), Color(0xFFB3C6E7)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
         ),
         child: Scaffold(
-          backgroundColor: Colors.transparent,
+          backgroundColor: Colors.transparent, // Nền trong suốt để thấy gradient
           appBar: null,
           body: _buildBody(model, loc),
           bottomNavigationBar: Container(
             decoration: BoxDecoration(
-              color: Colors.blue[300],
+              color: Colors.white,
               boxShadow: [
-                BoxShadow(color: Colors.blue[200]!.withOpacity(0.2), blurRadius: 16, offset: const Offset(0, -2)),
+                BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, -2)),
               ],
-              borderRadius: const BorderRadius.only(topLeft: Radius.circular(22), topRight: Radius.circular(22)),
+              // Bỏ bo góc ở BottomNav để giao diện trông mượt mà hơn
             ),
             child: BottomNavigationBar(
               type: BottomNavigationBarType.fixed,
-              backgroundColor: Colors.transparent,
+              backgroundColor: Colors.transparent, // Quan trọng: làm cho nó trong suốt
               elevation: 0,
-              selectedIconTheme: const IconThemeData(size: 32),
-              unselectedIconTheme: const IconThemeData(size: 26),
               currentIndex: _selectedIndex >= tabs.length ? tabs.length - 1 : _selectedIndex,
               onTap: _onItemTapped,
-              selectedItemColor: Colors.white,
-              unselectedItemColor: Colors.white70,
+
+              // Tối ưu màu sắc để hiện đại hơn
+              selectedItemColor: theme.colorScheme.primary, // Màu chủ đạo (Xanh đậm)
+              unselectedItemColor: Colors.grey.shade500,
+
+              selectedIconTheme: const IconThemeData(size: 28),
+              unselectedIconTheme: const IconThemeData(size: 24),
+
               showSelectedLabels: true,
               showUnselectedLabels: true,
-              selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w400),
+              selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 11),
               items: tabs
                   .map(
                     (tab) => BottomNavigationBarItem(

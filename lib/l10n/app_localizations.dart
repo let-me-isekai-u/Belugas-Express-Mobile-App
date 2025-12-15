@@ -1378,6 +1378,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Are you sure you want to delete this account?'**
   String get confirmDeleteAccount;
+
+  /// No description provided for @loginTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Beluga Express Login'**
+  String get loginTitle;
+
+  /// No description provided for @personalInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Information'**
+  String get personalInfo;
+
+  /// No description provided for @securityInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Security'**
+  String get securityInfo;
+
+  /// No description provided for @contactAndOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Contacts & Other'**
+  String get contactAndOther;
+
+  /// No description provided for @verification.
+  ///
+  /// In en, this message translates to:
+  /// **'Email Verification'**
+  String get verification;
+
+  /// No description provided for @quickActionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick action'**
+  String get quickActionsTitle;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -368,7 +368,14 @@
   "deleteAccountButton": "xoá tài khoản",
   "verificationCode": "Mã OTP",
   "enterVerificationCode": "Nhập mã xác thực để xác nhận xoá tài khoản người dùng này",
-  "confirmDeleteAccount": "Bạn có chắc chắn xoá tài khoản này không?"
+  "confirmDeleteAccount": "Bạn có chắc chắn xoá tài khoản này không?",
+
+  "loginTitle": "Đăng nhập Beluga Express",
+  "personalInfo": "Thông tin cá nhân",
+  "securityInfo": "Bảo mật",
+  "contactAndOther": "Liên hệ & Khác",
+  "verification": "Xác thực Email",
+  "quickActionsTitle": "Thao tác nhanh"
 
 
 
